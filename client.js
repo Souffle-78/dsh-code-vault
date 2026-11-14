@@ -38,7 +38,6 @@ window.__ModuleLoader__.load({
         unsaveHint: 'Saved — click again to remove it',
         unsaved: 'Removed from vault',
         count: (n) => `${n} saved`,
-        confirmDelete: 'Delete this saved code?',
         importFailed: 'That file could not be read — export a JSON from here first.',
         imported: (n) => `Imported ${n} block(s)`,
         importNone: 'Nothing new — those blocks are already saved',
@@ -52,6 +51,33 @@ window.__ModuleLoader__.load({
         localOnly: 'Stored in this browser only. Use Export/Import to back up or move machines.',
         openChat: 'Open a conversation',
         langHint: 'Language',
+        select: 'Select',
+        exitSelect: 'Done',
+        selectHint: 'Select mode: click a card to pick it, then run a batch action.',
+        selectedCount: (n) => `${n} selected`,
+        selectAll: 'Select all',
+        clearSelection: 'Clear',
+        selectedEmpty: 'Pick at least one card first.',
+        batchCopy: 'Copy selected',
+        batchTag: 'Tag selected',
+        batchDelete: 'Delete selected',
+        deleteLabel: 'Delete',
+        merge: 'Merge into one',
+        mergeTitle: 'Title of the new entry',
+        mergePreview: 'Preview',
+        mergeHint: 'Merging adds one new entry that fences every selected block in order. The originals stay.',
+        create: 'Create',
+        cancel: 'Cancel',
+        confirmDeleteOne: 'Delete this saved code? This cannot be undone.',
+        confirmDeleteMany: (n) => `Delete ${n} selected entries? This cannot be undone.`,
+        confirmMerge: (n) => `Merge ${n} selected entries into one new entry? The originals stay.`,
+        merged: 'Merged into a new entry',
+        mergeFailed: 'Could not merge — browser storage may be full',
+        tagged: (n) => `Tag added to ${n} entries`,
+        copiedMany: (n) => `Copied ${n} block(s)`,
+        removed: 'Deleted',
+        tagPrompt: 'Tag name, then Enter',
+        confirmNote: 'This step needs one more click.',
       },
       zh: {
         title: '代码收藏夹',
@@ -77,7 +103,6 @@ window.__ModuleLoader__.load({
         unsaveHint: '已收藏——再点一下取消收藏',
         unsaved: '已取消收藏',
         count: (n) => `已收 ${n} 条`,
-        confirmDelete: '删除这条收藏？',
         importFailed: '这个文件读不了，请用本面板导出的 JSON。',
         imported: (n) => `已导入 ${n} 条`,
         importNone: '没有新内容，这些代码已经收藏过了',
@@ -91,6 +116,33 @@ window.__ModuleLoader__.load({
         localOnly: '只存本地浏览器。换设备用「导出 / 导入」。',
         openChat: '去对话里试一下',
         langHint: '语言',
+        select: '多选',
+        exitSelect: '完成',
+        selectHint: '多选模式：点卡片选中，再执行批量操作。',
+        selectedCount: (n) => `已选 ${n} 条`,
+        selectAll: '全选',
+        clearSelection: '清空',
+        selectedEmpty: '先选中至少一条。',
+        batchCopy: '复制已选',
+        batchTag: '加标签',
+        batchDelete: '删除已选',
+        deleteLabel: '删除',
+        merge: '合并为新条目',
+        mergeTitle: '新条目标题',
+        mergePreview: '预览',
+        mergeHint: '合并会按顺序把选中的代码各包一层代码块，生成一条新收藏；原来的仍然保留。',
+        create: '创建',
+        cancel: '取消',
+        confirmDeleteOne: '删除这条收藏？此操作不可撤销。',
+        confirmDeleteMany: (n) => `删除选中的 ${n} 条收藏？此操作不可撤销。`,
+        confirmMerge: (n) => `把选中的 ${n} 条合并成一条新收藏？原收藏会保留。`,
+        merged: '已合并为一条新收藏',
+        mergeFailed: '合并失败，浏览器存储可能已满',
+        tagged: (n) => `已给 ${n} 条加上标签`,
+        copiedMany: (n) => `已复制 ${n} 段代码`,
+        removed: '已删除',
+        tagPrompt: '标签名，回车确认',
+        confirmNote: '这一步需要再点一次确认。',
       },
     }
 
@@ -371,6 +423,7 @@ window.__ModuleLoader__.load({
 
     const styles = {
       root: {
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -381,6 +434,81 @@ window.__ModuleLoader__.load({
         color: 'var(--dsw-alias-label-primary)',
       },
       titleRow: { display: 'flex', alignItems: 'baseline', gap: 8 },
+      selBar: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        flexWrap: 'wrap',
+        border: '1px solid var(--dsw-alias-brand-primary)',
+        background: 'var(--dsw-alias-interactive-bg-hover)',
+        borderRadius: 8,
+        padding: '6px 8px',
+      },
+      cardSelected: {
+        borderColor: 'var(--dsw-alias-brand-primary)',
+        background: 'var(--dsw-alias-bg-layer-2)',
+      },
+      check: {
+        width: 15,
+        height: 15,
+        borderRadius: 4,
+        flex: '0 0 auto',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        background: 'var(--dsw-alias-bg-base)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 11,
+        lineHeight: 1,
+        color: 'var(--dsw-alias-bg-base)',
+        boxSizing: 'border-box',
+      },
+      checkOn: {
+        background: 'var(--dsw-alias-brand-primary)',
+        borderColor: 'var(--dsw-alias-brand-primary)',
+      },
+      overlay: {
+        position: 'absolute',
+        inset: 0,
+        zIndex: 10,
+        background: 'var(--dsw-alias-bg-base)',
+        opacity: 0.94,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        boxSizing: 'border-box',
+      },
+      dialog: {
+        width: '100%',
+        maxWidth: 430,
+        border: '1px solid var(--dsw-alias-border-l2)',
+        background: 'var(--dsw-alias-bg-layer-1)',
+        borderRadius: 12,
+        padding: '16px 16px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
+        outline: 'none',
+      },
+      dialogTitle: { margin: 0, fontSize: 14, fontWeight: 600, lineHeight: '20px' },
+      dialogText: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },
+      dialogError: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-state-error-primary)' },
+      dialogActions: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 2 },
+      preview: {
+        margin: 0,
+        padding: '8px 10px',
+        maxHeight: 140,
+        overflow: 'auto',
+        fontSize: 12,
+        lineHeight: '17px',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+        color: 'var(--dsw-alias-label-secondary)',
+        background: 'var(--dsw-alias-markdown-code-block)',
+        borderRadius: 8,
+        whiteSpace: 'pre-wrap',
+      },
       title: { margin: 0, fontSize: 16, fontWeight: 600, lineHeight: '22px' },
       badge: {
         fontSize: 12,
@@ -533,6 +661,95 @@ window.__ModuleLoader__.load({
       return false
     }
 
+    // --------------------------------------------------------------- selection
+
+    function joinCodes(items) {
+      return items.map((item) => item.code.replace(/\s+$/, '')).join('\n\n')
+    }
+
+    // One fenced block per entry, in list order, each headed by its own title: pasting the
+    // result into a chat keeps every language's highlighting intact.
+    function mergeText(items) {
+      const block = []
+      for (const item of items) {
+        const name = String(item.title || item.lang || 'code')
+          .replace(/\s+/g, ' ')
+          .trim()
+        const fence = /^[A-Za-z0-9_+#.-]{1,24}$/.test(item.lang || '') ? item.lang : ''
+        block.push(`### ${name}`)
+        block.push('```' + fence)
+        block.push(item.code.replace(/\s+$/, ''))
+        block.push('```')
+        block.push('')
+      }
+      return block.join('\n').replace(/\s+$/, '') + '\n'
+    }
+
+    function defaultMergeTitle(items) {
+      const first = items[0]
+      const base = String((first && first.title) || 'Code').slice(0, 48)
+      return `${base} +${Math.max(items.length - 1, 0)}`
+    }
+
+    /** Modal confirmation: Escape, backdrop click, and a first-focus all handled here. */
+    function Dialog(props) {
+      const dict = t()
+      const cancelRef = React.useRef(props.onCancel)
+      cancelRef.current = props.onCancel
+      const nodeRef = React.useRef(null)
+
+      React.useEffect(() => {
+        const onKey = (event) => {
+          if (event.key === 'Escape') {
+            event.stopPropagation()
+            cancelRef.current()
+          }
+        }
+        document.addEventListener('keydown', onKey, true)
+        const node = nodeRef.current
+        // Focus the dialog itself; any input inside takes focus through autoFocus.
+        if (node && typeof node.focus === 'function') {
+          try {
+            node.focus({ preventScroll: true })
+          } catch {}
+        }
+        return () => document.removeEventListener('keydown', onKey, true)
+      }, [])
+
+      return h(
+        'div',
+        {
+          style: styles.overlay,
+          onMouseDown: (event) => {
+            if (event.target === event.currentTarget) cancelRef.current()
+          },
+        },
+        h(
+          'div',
+          {
+            ref: nodeRef,
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-label': props.title,
+            tabIndex: -1,
+            style: styles.dialog,
+          },
+          h('p', { style: styles.dialogTitle }, props.title),
+          props.children,
+          h(
+            'div',
+            { style: styles.dialogActions },
+            button(dict.cancel, props.onCancel),
+            button(props.confirmLabel || dict.create, props.onConfirm, {
+              primary: true,
+              danger: props.danger,
+              disabled: props.disabled,
+            }),
+          ),
+        ),
+      )
+    }
+
     // ------------------------------------------------------------------- panel
 
     function TagEditor(props) {
@@ -571,6 +788,8 @@ window.__ModuleLoader__.load({
     function AssetCard(props) {
       const dict = t()
       const asset = props.asset
+      const selectable = Boolean(props.selectable)
+      const selected = Boolean(props.selected)
       const [flash, setFlash] = React.useState('')
       const flashTimer = React.useRef(0)
       React.useEffect(() => () => window.clearTimeout(flashTimer.current), [])
@@ -581,45 +800,86 @@ window.__ModuleLoader__.load({
         flashTimer.current = window.setTimeout(() => setFlash(''), 1200)
       }
 
-      const tags = asset.tags.map((tag, i) =>
-        h(
-          'button',
+      const tags = selectable
+        ? null
+        : asset.tags.map((tag, i) =>
+            h(
+              'button',
+              {
+                key: `${tag}-${i}`,
+                type: 'button',
+                title: dict.removeTagHint,
+                onClick: () => props.onTag(asset.id, asset.tags.filter((_, index) => index !== i)),
+                style: {
+                  fontSize: 11,
+                  lineHeight: '18px',
+                  padding: '0 7px',
+                  borderRadius: 999,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  color: 'var(--dsw-alias-label-tertiary)',
+                  background: 'var(--dsw-alias-bg-layer-2)',
+                  border: '1px solid transparent',
+                },
+              },
+              tag,
+            ),
+          )
+
+      const head = h(
+        'div',
+        { style: styles.cardHead },
+        selectable
+          ? h(
+              'span',
+              { style: selected ? { ...styles.check, ...styles.checkOn } : styles.check, 'aria-hidden': true },
+              selected ? '✓' : '',
+            )
+          : null,
+        h('span', { style: styles.cardTitle, title: asset.title }, asset.title),
+        asset.lang ? h('span', { style: styles.meta }, asset.lang) : null,
+        h('span', { style: { ...styles.meta, marginLeft: 'auto' } }, formatDate(asset.createdAt)),
+      )
+
+      const body = h(
+        'pre',
+        { style: styles.pre },
+        asset.code.length > 4000 ? `${asset.code.slice(0, 4000)}\n…` : asset.code,
+      )
+
+      // In select mode the whole card is the hit target and the per-card actions step aside, so
+      // a click can never mean two things at once.
+      if (selectable) {
+        return h(
+          'div',
           {
-            key: `${tag}-${i}`,
-            type: 'button',
-            title: dict.removeTagHint,
-            onClick: () => props.onTag(asset.id, asset.tags.filter((_, index) => index !== i)),
-            style: {
-              fontSize: 11,
-              lineHeight: '18px',
-              padding: '0 7px',
-              borderRadius: 999,
-              font: 'inherit',
-              cursor: 'pointer',
-              color: 'var(--dsw-alias-label-tertiary)',
-              background: 'var(--dsw-alias-bg-layer-2)',
-              border: '1px solid transparent',
+            style: selected ? { ...styles.card, ...styles.cardSelected, cursor: 'pointer' } : { ...styles.card, cursor: 'pointer' },
+            role: 'checkbox',
+            'aria-checked': selected,
+            'aria-label': asset.title,
+            tabIndex: 0,
+            onClick: () => props.onToggle(asset.id),
+            onKeyDown: (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                props.onToggle(asset.id)
+              }
             },
           },
-          tag,
-        ),
-      )
+          head,
+          body,
+        )
+      }
 
       return h(
         'div',
         { style: styles.card },
-        h(
-          'div',
-          { style: styles.cardHead },
-          h('span', { style: styles.cardTitle, title: asset.title }, asset.title),
-          asset.lang ? h('span', { style: styles.meta }, asset.lang) : null,
-          h('span', { style: { ...styles.meta, marginLeft: 'auto' } }, formatDate(asset.createdAt)),
-        ),
-        h('pre', { style: styles.pre }, asset.code.length > 4000 ? `${asset.code.slice(0, 4000)}\n…` : asset.code),
+        head,
+        body,
         h(
           'div',
           { style: styles.actions },
-          tags.length ? h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } }, tags) : null,
+          tags && tags.length ? h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } }, tags) : null,
           h(TagEditor, { tags: asset.tags, onAdd: (tag) => props.onTag(asset.id, [...asset.tags, tag]) }),
           h('span', { style: { flex: 1 } }),
           flash ? h('span', { style: { ...styles.meta, color: 'var(--dsw-alias-state-success-primary)' } }, flash) : null,
@@ -627,20 +887,12 @@ window.__ModuleLoader__.load({
             copyText(asset.code, (ok) => say(ok ? dict.copied : dict.copyFailed))
           }),
           button(dict.insert, () => {
-            // The composer only exists inside the conversation view, so switch there first;
-            // the dock bridge drains the queue as soon as it mounts.
             // The composer only exists in the Conversation view, so leave this panel first;
             // the dock bridge drains the queue as soon as it mounts.
             backToConversation()
             requestInsert(asset.code, (ok) => say(ok ? dict.inserted : dict.noSession))
           }),
-          button(
-            dict.remove,
-            () => {
-              if (window.confirm(dict.confirmDelete)) props.onRemove(asset.id)
-            },
-            { danger: true },
-          ),
+          button(dict.remove, () => props.onAskRemove(asset.id), { danger: true }),
         ),
       )
     }
@@ -668,6 +920,11 @@ window.__ModuleLoader__.load({
       const [notice, setNotice] = React.useState('')
       const [noticeError, setNoticeError] = React.useState(false)
       const noticeTimer = React.useRef(0)
+      const [selectMode, setSelectMode] = React.useState(false)
+      const [selected, setSelected] = React.useState([])
+      const [dialog, setDialog] = React.useState(null)
+      const [tagDraft, setTagDraft] = React.useState('')
+      const [mergeTitle, setMergeTitle] = React.useState('')
 
       const announce = (text, error) => {
         setNotice(text)
@@ -678,6 +935,15 @@ window.__ModuleLoader__.load({
       React.useEffect(() => () => window.clearTimeout(noticeTimer.current), [])
 
       React.useEffect(() => subscribe(() => setItems(readAll().slice())), [])
+
+      // Selection lives by id: entries removed here, in another tab, or by an import silently
+      // drop out instead of leaving a phantom count behind.
+      React.useEffect(() => {
+        setSelected((prev) => {
+          const next = prev.filter((id) => items.some((item) => item.id === id))
+          return next.length === prev.length ? prev : next
+        })
+      }, [items])
 
       const langs = []
       for (const item of items) {
@@ -691,6 +957,17 @@ window.__ModuleLoader__.load({
         if (!needle) return true
         return searchTextOf(item).includes(needle)
       })
+
+      const selectedItems = items.filter((item) => selected.includes(item.id))
+      const selectedIds = selectedItems.map((item) => item.id)
+      const toggleSelect = (id) =>
+        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+      const exitSelect = () => {
+        setSelectMode(false)
+        setSelected([])
+        setDialog(null)
+        setTagDraft('')
+      }
 
       const exportAll = () => {
         try {
@@ -728,6 +1005,75 @@ window.__ModuleLoader__.load({
         if (!backToConversation()) announce(dict.noSession, true)
       }
 
+      // ------------------------------------------------------------- batch ops
+
+      const copySelected = () => {
+        if (!selectedItems.length) return announce(dict.selectedEmpty, true)
+        copyText(joinCodes(selectedItems), (ok) =>
+          announce(ok ? dict.copiedMany(selectedItems.length) : dict.copyFailed, !ok),
+        )
+      }
+
+      const askDelete = (ids) => {
+        if (!ids.length) return announce(dict.selectedEmpty, true)
+        setDialog({ kind: 'delete', ids: ids.slice() })
+      }
+
+      const runDelete = (ids) => {
+        let failed = 0
+        for (const id of ids) {
+          if (!removeAsset(id)) failed += 1
+        }
+        setDialog(null)
+        setSelected((prev) => prev.filter((id) => !ids.includes(id)))
+        announce(failed ? dict.storeFailed : dict.removed, Boolean(failed))
+      }
+
+      const openMerge = () => {
+        if (selectedItems.length < 2) return announce(dict.selectedEmpty, true)
+        setMergeTitle(defaultMergeTitle(selectedItems))
+        setDialog({ kind: 'merge' })
+      }
+
+      const mergedCode = mergeText(selectedItems)
+      const mergedTooLong = mergedCode.length > MAX_CODE
+
+      const runMerge = () => {
+        if (selectedItems.length < 2) return
+        if (mergedCode.length > MAX_CODE) {
+          announce(dict.mergeFailed, true)
+          return
+        }
+        const tags = []
+        for (const item of selectedItems) {
+          for (const tag of item.tags) if (!tags.includes(tag)) tags.push(tag)
+        }
+        const title = mergeTitle.trim() || defaultMergeTitle(selectedItems)
+        const added = addAsset({ title, lang: 'markdown', code: mergedCode, tags })
+        setDialog(null)
+        if (!added) return announce(dict.mergeFailed, true)
+        setSelected([])
+        setSelectMode(false)
+        announce(dict.merged)
+      }
+
+      const runTag = () => {
+        const tag = tagDraft.trim().slice(0, 24)
+        setDialog(null)
+        setTagDraft('')
+        if (!tag) return
+        let applied = 0
+        let failed = 0
+        for (const item of selectedItems) {
+          const next = item.tags.includes(tag) ? item.tags : [...item.tags, tag]
+          if (patchAsset(item.id, { tags: next })) applied += 1
+          else failed += 1
+        }
+        announce(failed ? dict.storeFailed : dict.tagged(applied), Boolean(failed))
+      }
+
+      // ----------------------------------------------------------------- chrome
+
       const head = h(
         'div',
         { style: styles.titleRow },
@@ -760,6 +1106,10 @@ window.__ModuleLoader__.load({
           onChange: (e) => setQuery(e.target.value),
           style: styles.input,
         }),
+        button(selectMode ? dict.exitSelect : dict.select, () => {
+          if (selectMode) exitSelect()
+          else setSelectMode(true)
+        }, { disabled: items.length === 0 }),
         button(dict.export, exportAll, { disabled: items.length === 0 }),
         button(dict.import, () => fileRef.current && fileRef.current.click()),
         h('input', {
@@ -774,6 +1124,28 @@ window.__ModuleLoader__.load({
           },
         }),
       )
+
+      const selectBar = selectMode
+        ? h(
+            'div',
+            { style: styles.selBar },
+            h(
+              'span',
+              { style: styles.meta },
+              selectedItems.length ? dict.selectedCount(selectedItems.length) : dict.selectHint,
+            ),
+            button(dict.selectAll, () => setSelected(view.map((item) => item.id)), { disabled: !view.length }),
+            button(dict.clearSelection, () => setSelected([]), { disabled: !selected.length }),
+            h('span', { style: { flex: 1 } }),
+            button(dict.batchCopy, copySelected, { disabled: !selectedItems.length }),
+            button(dict.batchTag, () => setDialog({ kind: 'tag' }), { disabled: !selectedItems.length }),
+            button(dict.merge, openMerge, { disabled: selectedItems.length < 2 }),
+            button(dict.batchDelete, () => askDelete(selectedIds), {
+              disabled: !selectedItems.length,
+              danger: true,
+            }),
+          )
+        : null
 
       const chips = langs.length
         ? h(
@@ -798,9 +1170,10 @@ window.__ModuleLoader__.load({
               h(AssetCard, {
                 key: asset.id,
                 asset,
-                onRemove: (id) => {
-                  if (!removeAsset(id)) announce(dict.storeFailed, true)
-                },
+                selectable: selectMode,
+                selected: selected.includes(asset.id),
+                onToggle: toggleSelect,
+                onAskRemove: (id) => askDelete([id]),
                 onTag: (id, tags) => {
                   if (!patchAsset(id, { tags })) announce(dict.storeFailed, true)
                 },
@@ -809,11 +1182,90 @@ window.__ModuleLoader__.load({
           )
         : h('p', { style: styles.empty }, items.length ? dict.searchEmpty : dict.empty)
 
+      let dialogNode = null
+      if (dialog && dialog.kind === 'delete') {
+        const count = dialog.ids.length
+        dialogNode = h(
+          Dialog,
+          {
+            title: count > 1 ? dict.batchDelete : dict.remove,
+            confirmLabel: dict.deleteLabel,
+            danger: true,
+            onCancel: () => setDialog(null),
+            onConfirm: () => runDelete(dialog.ids),
+          },
+          h('p', { style: styles.dialogText }, count > 1 ? dict.confirmDeleteMany(count) : dict.confirmDeleteOne),
+        )
+      } else if (dialog && dialog.kind === 'tag') {
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.batchTag,
+            confirmLabel: dict.batchTag,
+            disabled: !tagDraft.trim(),
+            onCancel: () => setDialog(null),
+            onConfirm: runTag,
+          },
+          h('input', {
+            autoFocus: true,
+            value: tagDraft,
+            placeholder: dict.tagPrompt,
+            onChange: (e) => setTagDraft(e.target.value),
+            onKeyDown: (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                if (tagDraft.trim()) runTag()
+              }
+            },
+            style: styles.input,
+          }),
+          h('p', { style: styles.dialogText }, dict.selectedCount(selectedItems.length)),
+        )
+      } else if (dialog && dialog.kind === 'merge') {
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.merge,
+            confirmLabel: dict.create,
+            disabled: mergedTooLong || selectedItems.length < 2,
+            onCancel: () => setDialog(null),
+            onConfirm: runMerge,
+          },
+          h('p', { style: styles.dialogText }, dict.mergeHint),
+          h('input', {
+            autoFocus: true,
+            value: mergeTitle,
+            placeholder: dict.mergeTitle,
+            onChange: (e) => setMergeTitle(e.target.value),
+            onKeyDown: (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                if (!mergedTooLong) runMerge()
+              }
+            },
+            style: styles.input,
+          }),
+          h('p', { style: styles.meta }, `${dict.mergePreview} · ${selectedItems.length}`),
+          h(
+            'pre',
+            { style: styles.preview },
+            mergedCode.length > 1200 ? `${mergedCode.slice(0, 1200)}\n…` : mergedCode,
+          ),
+          mergedTooLong ? h('p', { style: styles.dialogError }, dict.mergeFailed) : null,
+        )
+      }
+
       return h(
         'div',
         { style: styles.root },
-        h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } }, head, h('p', { style: styles.subtitle }, dict.subtitle)),
+        h(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          head,
+          h('p', { style: styles.subtitle }, dict.subtitle),
+        ),
         toolbar,
+        selectBar,
         notice
           ? h(
               'p',
@@ -828,6 +1280,7 @@ window.__ModuleLoader__.load({
         chips,
         helpOpen || items.length === 0 ? h(HelpBlock, { onOpenChat: openChat }) : null,
         body,
+        dialogNode,
       )
     }
 
