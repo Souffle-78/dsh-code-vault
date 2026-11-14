@@ -10,7 +10,7 @@
 | 真实可用代码（`client.js` 1100 行 / 4 个槽） | ✅ |
 | `repository` / `homepage` / `bugs` / `author` | ✅ 指向 `https://github.com/Souffle-78/dsh-code-vault` |
 | LICENSE（MIT） | ✅ |
-| 位图图标 `assets/icon-180.png`（180×180 PNG） | ✅ 已生成，yml 用 raw.githubusercontent 绝对地址引用 |
+| 位图图标 `assets/icon-180.png`（180×180 PNG） | ✅ yml 用 raw.githubusercontent 绝对地址引用 |
 | 截图 `screenshots.json` | ✅ 2 张：面板全景（封面）+ 代码块收藏按钮 |
 | 公开仓库 + `dsh-plugin` topic | ✅ https://github.com/Souffle-78/dsh-code-vault（已打 `dsh-plugin` / `deepseek-harness`） |
 | 上架 PR | ✅ https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15223 |
