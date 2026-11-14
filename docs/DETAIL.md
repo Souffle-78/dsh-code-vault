@@ -2,7 +2,7 @@
 
 Keep the code that shows up in a conversation — a shell command, a config file, a snippet worth reusing — instead of scrolling back to find it.
 
-![A chat code block with a save button beside the sidebar panel listing saved code](preview.svg)
+![A chat code block with its Save to vault button at the bottom right](../assets/screenshot-codeblock.webp)
 
 ## How to use it
 
