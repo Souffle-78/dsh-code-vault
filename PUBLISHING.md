@@ -6,7 +6,7 @@
 
 | 项目 | 状态 |
 | --- | --- |
-| `package.json` 声明 `dsh.bundle.patch` + `cordis.patch.yml` | ✅ 已具备（市场收录的硬门槛） |
+| `package.json` 声明 `dsh.bundle.patch` + `cordis.patch.yml` | ✅  |
 | 真实可用代码（`client.js` 1100 行 / 4 个槽） | ✅ |
 | `repository` / `homepage` / `bugs` / `author` | ✅ 指向 `https://github.com/Souffle-78/dsh-code-vault` |
 | LICENSE（MIT） | ✅ |
