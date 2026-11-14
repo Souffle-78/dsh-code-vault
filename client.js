@@ -207,6 +207,15 @@ window.__ModuleLoader__.load({
       return () => listeners.delete(fn)
     }
 
+    // Entries saved before titles were cleaned kept the raw first line, comment marker and
+    // all. Re-derive those on read; titles the user typed (merge results) are left alone.
+    function titleFrom(raw) {
+      const stored = typeof raw.title === 'string' ? raw.title.trim().slice(0, 80) : ''
+      if (!stored) return titleOf(raw.code)
+      const legacy = firstLine(raw.code).slice(0, 60)
+      return stored === legacy ? titleOf(raw.code) : stored
+    }
+
     function normalize(raw) {
       if (!raw || typeof raw !== 'object') return null
       if (typeof raw.code !== 'string' || raw.code.trim() === '') return null
@@ -220,7 +229,7 @@ window.__ModuleLoader__.load({
       }
       return {
         id: typeof raw.id === 'string' && raw.id ? raw.id : newId(),
-        title: typeof raw.title === 'string' && raw.title.trim() ? raw.title.trim().slice(0, 80) : titleOf(raw.code),
+        title: titleFrom(raw),
         lang: typeof raw.lang === 'string' ? raw.lang.slice(0, 24) : '',
         code: raw.code.slice(0, MAX_CODE),
         tags,
@@ -305,12 +314,40 @@ window.__ModuleLoader__.load({
       return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
     }
 
-    function titleOf(code) {
-      const line = code
+    // A snippet's title is its first line with the comment marker stripped, so a bash block
+    // titled "# list open ports" reads "list open ports" instead of showing the "#" too.
+    const COMMENT_LEAD = /^(?:\/\/+|#!?|--+|;+|\/\*+|<!--)\s*/
+
+    function cleanLine(line) {
+      const stripped = String(line || '')
+        .trim()
+        .replace(COMMENT_LEAD, '')
+        .replace(/\*\/$|-->$/, '')
+        .trim()
+      return stripped
+    }
+
+    function firstLine(code) {
+      return String(code || '')
         .split('\n')
         .map((x) => x.trim())
-        .find((x) => x !== '')
-      return (line ? line.slice(0, 60) : 'Code') || 'Code'
+        .find((x) => x !== '') || ''
+    }
+
+    function titleOf(code) {
+      return (cleanLine(firstLine(code)).slice(0, 60) || 'Code')
+    }
+
+    // The card body drops the line that already became the title, otherwise every card shows
+    // the same comment twice.
+    function previewOf(asset) {
+      const lines = String(asset.code || '').split('\n')
+      const title = String(asset.title || '').trim()
+      let start = 0
+      while (start < lines.length && lines[start].trim() === '') start += 1
+      if (start < lines.length && cleanLine(lines[start]).slice(0, 60) === title) start += 1
+      const rest = lines.slice(start).join('\n').replace(/^\s*\n/, '')
+      return rest.trim() ? rest : asset.code
     }
 
     function addAsset(input) {
@@ -842,10 +879,11 @@ window.__ModuleLoader__.load({
         h('span', { style: { ...styles.meta, marginLeft: 'auto' } }, formatDate(asset.createdAt)),
       )
 
+      const preview = previewOf(asset)
       const body = h(
         'pre',
         { style: styles.pre },
-        asset.code.length > 4000 ? `${asset.code.slice(0, 4000)}\n…` : asset.code,
+        preview.length > 4000 ? `${preview.slice(0, 4000)}\n…` : preview,
       )
 
       // In select mode the whole card is the hit target and the per-card actions step aside, so
