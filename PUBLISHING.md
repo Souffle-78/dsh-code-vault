@@ -12,11 +12,12 @@
 | LICENSE（MIT） | ✅ |
 | 位图图标 `assets/icon-180.png`（180×180 PNG） | ✅ 已生成，yml 用 raw.githubusercontent 绝对地址引用 |
 | 截图 `screenshots.json` | ⬜ 可选，未做（市场会回退到 README 里的图片） |
-| 公开仓库 + `dsh-plugin` topic | ⬜ 待建（需 GitHub 认证） |
-| 仓库满 1 天 | ⬜ 建仓后自动满足；CI 会按小时自动重跑 |
+| 公开仓库 + `dsh-plugin` topic | ✅ https://github.com/Souffle-78/dsh-code-vault（已打 `dsh-plugin` / `deepseek-harness`） |
+| 上架 PR | ✅ https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15223 |
+| 仓库满 1 天 | ⏳ 2026-11-14 建仓，CI 会按小时自动重跑，满 24h 后自行转绿 |
 | npm 包 | 暂不发布（用户选择先只走 GitHub 收录） |
 
-## 1. 建仓与推送
+## 1. 建仓与推送（已完成，留作记录）
 
 ```sh
 cd /Users/zhanghanjie/Documents/deepseek-harness/default-workspace/dsh-code-vault
@@ -29,9 +30,9 @@ gh repo edit --add-topic dsh-plugin --add-topic deepseek-harness
 
 没有官方审核市场：dsh-market 打开时实时拉 `https://awesome-dsh-plugin.com/plugins.json`，数据源是列表仓库 `awesome-dsh-plugin/awesome-dsh-plugin` 的 `data/plugins/*.yml`。
 
-1. Fork `awesome-dsh-plugin/awesome-dsh-plugin`。
+1. Fork `awesome-dsh-plugin/awesome-dsh-plugin`。（已 fork 到 `Souffle-78/awesome-dsh-plugin`）
 2. 添加文件 `data/plugins/Souffle-78__dsh-code-vault.yml`，内容见 `publish/awesome-dsh-plugin-entry.yml`。
-3. 提 PR，标题例如 `Add Souffle-78/dsh-code-vault (ui)`。
+3. 提 PR `Add Souffle-78/dsh-code-vault` → PR #15223（已提交）。
 
 CI 依次检查：条目数 ≤3、`dsh.bundle` 声明、仓库年龄 ≥1 天、`awesome-lint` 与站点构建（双语一致性、分隔符、日期、截图）。仓库年龄不达标时会被自动重跑，几小时后自己通过，不需要推空提交。
 
