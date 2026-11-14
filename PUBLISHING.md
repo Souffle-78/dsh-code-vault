@@ -15,7 +15,7 @@
 | 公开仓库 + `dsh-plugin` topic | ✅ https://github.com/Souffle-78/dsh-code-vault（已打 `dsh-plugin` / `deepseek-harness`） |
 | 上架 PR | ✅ https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15223 |
 | 仓库满 1 天 | ⏳ 2026-11-14 建仓，CI 会按小时自动重跑，满 24h 后自行转绿 |
-| npm 包 | 暂不发布（用户选择先只走 GitHub 收录） |
+| npm 包 | 暂不发布|
 
 ## 1. 建仓与推送（已完成，留作记录）
 
