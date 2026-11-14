@@ -586,6 +586,7 @@ window.__ModuleLoader__.load({
         flexDirection: 'column',
         gap: 8,
       },
+      helpTitle: { margin: 0, fontSize: 13, fontWeight: 600, lineHeight: '20px', color: 'var(--dsw-alias-label-primary)' },
       helpText: { margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--dsw-alias-label-secondary)' },
       notice: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-state-success-primary)' },
       helpNote: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-tertiary)' },
@@ -902,6 +903,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { style: styles.help },
+        props.showTitle ? h('p', { style: styles.helpTitle }, dict.empty) : null,
         h('p', { style: styles.helpText }, dict.step1),
         h('p', { style: styles.helpText }, dict.step2),
         h('p', { style: styles.helpText }, dict.step3),
@@ -1180,7 +1182,11 @@ window.__ModuleLoader__.load({
               }),
             ),
           )
-        : h('p', { style: styles.empty }, items.length ? dict.searchEmpty : dict.empty)
+        : items.length || query.trim()
+          ? h('p', { style: styles.empty }, dict.searchEmpty)
+          : helpOpen
+            ? null
+            : h('p', { style: styles.empty }, dict.empty)
 
       let dialogNode = null
       if (dialog && dialog.kind === 'delete') {
@@ -1278,7 +1284,7 @@ window.__ModuleLoader__.load({
             )
           : null,
         chips,
-        helpOpen || items.length === 0 ? h(HelpBlock, { onOpenChat: openChat }) : null,
+        helpOpen || items.length === 0 ? h(HelpBlock, { onOpenChat: openChat, showTitle: items.length === 0 }) : null,
         body,
         dialogNode,
       )
