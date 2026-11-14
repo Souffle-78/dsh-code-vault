@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Code Vault",
+    "description": "Save code blocks from a chat into a local vault. Click “Save to vault” at the top right of any code block in a conversation, then open the bookmark icon in the sidebar to search, tag, copy, or put a saved block straight back into the composer. Everything stays in this browser (no upload, no cross-device sync) — use Export/Import in the panel to move machines. The panel defaults to Chinese; switch 中文/English at its top right.",
+    "detail": "docs/DETAIL.md"
+  }
+}

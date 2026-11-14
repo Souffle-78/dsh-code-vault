@@ -1,0 +1,52 @@
+{
+  "name": "dsh-code-vault",
+  "version": "0.2.4",
+  "private": true,
+  "type": "module",
+  "description": "代码收藏夹：把对话里的代码块收进本地收藏夹，在侧栏面板里搜索、打标签、复制或一键插回输入框。Code Vault — save chat code blocks into a local, searchable vault with its own sidebar panel.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Souffle-78/dsh-code-vault.git"
+  },
+  "homepage": "https://github.com/Souffle-78/dsh-code-vault#readme",
+  "bugs": {
+    "url": "https://github.com/Souffle-78/dsh-code-vault/issues"
+  },
+  "author": "Souffle-78",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "code",
+    "snippets",
+    "sidebar"
+  ],
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "README.md",
+    "assets"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}
