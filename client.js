@@ -99,6 +99,7 @@ window.__ModuleLoader__.load({
         moved: (n) => `Moved ${n} item(s)`,
         moveFailed: 'Could not move — browser storage may be full',
         newFolder: 'New folder',
+        newSubfolder: 'New subfolder',
         renameFolder: 'Rename',
         deleteFolder: 'Delete folder',
         folderName: 'Folder name',
@@ -213,6 +214,7 @@ window.__ModuleLoader__.load({
         moved: (n) => `已移动 ${n} 条`,
         moveFailed: '移动失败，浏览器存储可能已满',
         newFolder: '新建文件夹',
+        newSubfolder: '新建子文件夹',
         renameFolder: '重命名',
         deleteFolder: '删除文件夹',
         folderName: '文件夹名字',
@@ -1955,23 +1957,61 @@ window.__ModuleLoader__.load({
       }
 
       const submitFolderName = () => {
-        const name = nameDraft.trim()
-        if (!name) return
-        const result =
-          dialog.mode === 'rename'
-            ? renameFolder(dialog.id, name)
-            : createFolder(name, dialog.parentId || null)
-        if (result.error) {
-          setDialogError(result.error === 'dup' ? dict.folderExists : dict.folderFailed)
-          return
+        const raw = nameDraft.trim()
+        if (!raw) return
+
+        if (dialog.mode === 'rename') {
+          // A folder name is one label, so a slash cannot open a new level here.
+          const result = renameFolder(dialog.id, raw.replace(/\//g, ' ').trim())
+          if (result.error) {
+            setDialogError(result.error === 'dup' ? dict.folderExists : dict.folderFailed)
+            return
+          }
+          setDialog(null)
+          setDialogError('')
+          return announce(dict.folderRenamed)
         }
-        const created = result.folder
+
+        // "项目 A / 前端" opens both levels at once, the way a file dialog would.
+        const segments = raw
+          .split('/')
+          .map((part) => part.trim())
+          .filter(Boolean)
+          .slice(0, 6)
+        if (!segments.length) return
+        let parentId = dialog.parentId || null
+        const touched = []
+        for (const segment of segments) {
+          const result = createFolder(segment, parentId)
+          if (result.error === 'dup') {
+            // Re-use the folder that is already there instead of failing the whole path.
+            const existing = readState().folders.find(
+              (folder) => folder.name === segment.slice(0, 40) && (folder.parentId || null) === parentId,
+            )
+            if (!existing) {
+              setDialogError(dict.folderFailed)
+              return
+            }
+            parentId = existing.id
+            touched.push(parentId)
+            continue
+          }
+          if (result.error) {
+            setDialogError(dict.folderFailed)
+            return
+          }
+          parentId = result.folder.id
+          touched.push(parentId)
+        }
         setDialog(null)
         setDialogError('')
-        if (created && dialog.mode !== 'rename' && created.parentId) {
-          setExpanded((prev) => (prev.includes(created.parentId) ? prev : [...prev, created.parentId]))
-        }
-        announce(dialog.mode === 'rename' ? dict.folderRenamed : dict.folderCreated)
+        setExpanded((prev) => {
+          const next = prev.slice()
+          for (const id of touched) if (!next.includes(id)) next.push(id)
+          return next
+        })
+        setCurrent(parentId)
+        announce(dict.folderCreated)
       }
 
       const runDeleteFolder = () => {
@@ -2047,8 +2087,9 @@ window.__ModuleLoader__.load({
           else setSelectMode(true)
         }, { disabled: tabItems.length === 0 }),
         tab === 'favorites'
-          ? button(dict.newFolder, () =>
-              openFolderCreate(current !== 'all' && current !== 'unfiled' ? current : null),
+          ? button(
+              current !== 'all' && current !== 'unfiled' ? dict.newSubfolder : dict.newFolder,
+              () => openFolderCreate(current !== 'all' && current !== 'unfiled' ? current : null),
             )
           : null,
         button(dict.export, exportAll, { disabled: items.length === 0 }),
@@ -2170,7 +2211,7 @@ window.__ModuleLoader__.load({
             real
               ? button(dict.renameFolder, openFolderRename)
               : null,
-            real ? button(dict.newFolder, () => openFolderCreate(current)) : null,
+            real ? button(dict.newSubfolder, () => openFolderCreate(current)) : null,
             real ? button(dict.deleteFolder, () => {
               setDialogError('')
               setDialog({ kind: 'folderDelete', id: current })
