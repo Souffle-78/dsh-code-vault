@@ -990,10 +990,14 @@ window.__ModuleLoader__.load({
       cardTitle: {
         fontSize: 13,
         fontWeight: 600,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
         minWidth: 0,
+        whiteSpace: 'normal',
+        overflow: 'hidden',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        wordBreak: 'break-word',
+        lineHeight: 1.4,
       },
       meta: { fontSize: 11, color: 'var(--dsw-alias-label-tertiary)', whiteSpace: 'nowrap' },
       pre: {
@@ -1356,13 +1360,14 @@ window.__ModuleLoader__.load({
       draftRow: { border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 10, padding: 10, background: 'var(--dsw-alias-bg-layer-1)', display: 'flex', flexDirection: 'column', gap: 5 },
       moveList: { display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 220, overflow: 'auto', border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 8, padding: 3 },
       moveRow: { display: 'flex', alignItems: 'center', gap: 8, borderRadius: 7, padding: '6px 8px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)', border: '1px solid transparent', marginBottom: 2 },
-      moveRowHover: { background: 'var(--dsw-alias-bg-layer-2)', borderColor: 'var(--dsw-alias-border-l2)' },
-      moveRowOn: { background: 'var(--dsw-alias-bg-layer-2)', borderColor: 'var(--dsw-alias-brand-primary)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      moveRowHover: { background: 'var(--dsw-alias-interactive-bg-hover)', borderColor: 'var(--dsw-alias-border-l2)' },
+      moveRowOn: { background: 'var(--dsw-alias-interactive-bg-hover)', borderColor: 'var(--dsw-alias-brand-primary)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
       moveDot: { flex: '0 0 14px', width: 14, height: 14, borderRadius: '50%', border: '1px solid var(--dsw-alias-border-l3)', boxSizing: 'border-box' },
       moveDotOn: { flex: '0 0 14px', width: 14, height: 14, borderRadius: '50%', border: '4px solid var(--dsw-alias-brand-primary)', background: 'var(--dsw-alias-bg-base)', boxSizing: 'border-box' },
       moveLabel: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
       moveCheck: { fontSize: 12, color: 'var(--dsw-alias-brand-primary)' },
       moveRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      editTitle: { width: '100%', boxSizing: 'border-box', minHeight: 34, maxHeight: 96, resize: 'vertical', fontFamily: 'inherit', fontSize: 13, lineHeight: '18px', padding: '7px 10px', borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-1)', color: 'var(--dsw-alias-label-primary)', outline: 'none' },
       editArea: { width: '100%', boxSizing: 'border-box', minHeight: 150, resize: 'vertical', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.5, padding: 8, borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-base)', color: 'var(--dsw-alias-label-primary)' },
       hint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
       folderBar: { display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' },
@@ -1413,7 +1418,7 @@ window.__ModuleLoader__.load({
       )
       node.textContent = ''
       const title = document.createElement('div')
-      title.textContent = titleOf(asset)
+      title.textContent = asset.title || titleOf(asset.code)
       title.setAttribute(
         'style',
         'font:600 12px/1.4 inherit;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap',
@@ -2013,7 +2018,8 @@ window.__ModuleLoader__.load({
           setDialogError(dict.editFailed)
           return
         }
-        const ok = updateItem(id, { title: editTitle.trim() || titleOf(editCode), code: editCode })
+        const nextTitle = editTitle.replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim()
+        const ok = updateItem(id, { title: nextTitle || titleOf(editCode), code: editCode })
         setDialog(null)
         announce(ok ? dict.editSaved : dict.editFailed, !ok)
       }
@@ -2463,16 +2469,24 @@ window.__ModuleLoader__.load({
           mergedTooLong ? h('p', { style: styles.dialogError }, dict.mergeFailed) : null,
         )
       } else if (dialog && dialog.kind === 'move') {
-        const pickRow = (id, label, depth) =>
-          h(
+        const pickRow = (id, label, depth) => {
+          const on = movePick === id
+          const rowStyle = { ...styles.moveRow, paddingLeft: 8 + depth * 14 }
+          if (on) Object.assign(rowStyle, styles.moveRowOn)
+          else if (moveHover === id) Object.assign(rowStyle, styles.moveRowHover)
+          return h(
             'div',
             {
               key: id,
-              style: movePick === id ? { ...styles.moveRow, ...styles.moveRowOn, paddingLeft: 6 + depth * 12 } : { ...styles.moveRow, paddingLeft: 6 + depth * 12 },
+              style: rowStyle,
               role: 'radio',
-              'aria-checked': movePick === id,
+              'aria-checked': on,
               tabIndex: 0,
               onClick: () => setMovePick(id),
+              onMouseEnter: () => setMoveHover(id),
+              onMouseLeave: () => setMoveHover(''),
+              onFocus: () => setMoveHover(id),
+              onBlur: () => setMoveHover(''),
               onKeyDown: (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault()
@@ -2480,8 +2494,11 @@ window.__ModuleLoader__.load({
                 }
               },
             },
-            label,
+            h('span', { style: on ? styles.moveDotOn : styles.moveDot }),
+            h('span', { style: styles.moveLabel }, label),
+            on ? h('span', { style: styles.moveCheck }, '✓') : null,
           )
+        }
         const rows = [pickRow('root', dict.moveRoot, 0)]
         const walkMove = (parentId, depth) => {
           const list = folders
@@ -2558,10 +2575,12 @@ window.__ModuleLoader__.load({
             onConfirm: runEdit,
           },
           h('p', { style: styles.meta }, dict.editTitleLabel),
-          h('input', {
+          h('textarea', {
             value: editTitle,
+            rows: Math.min(4, Math.max(1, editTitle.split('\n').length + Math.floor(editTitle.length / 40))),
+            spellCheck: false,
             onChange: (e) => setEditTitle(e.target.value),
-            style: styles.input,
+            style: styles.editTitle,
           }),
           h('p', { style: styles.meta }, dict.editCodeLabel),
           h('textarea', {
