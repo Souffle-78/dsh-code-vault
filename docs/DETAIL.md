@@ -25,4 +25,4 @@ Keep the code that shows up in a conversation — a shell command, a config file
 - A merged entry is stored as markdown, with each block keeping its own language fence.
 - If a merge would exceed 200 000 characters the confirm button is disabled, so storage never gets corrupted.
 
-5. A card is titled after the first line with its comment marker stripped (`#`, `//`, `--`), and the body no longer repeats that line.
+- A card is titled after the first line with its comment marker stripped (`#`, `//`, `--`), and the body no longer repeats that line.
