@@ -1043,6 +1043,50 @@ window.__ModuleLoader__.load({
       return comboLabel(combo)
     }
 
+    function comboKeys(combo) {
+      const keys = []
+      if (combo.mod) keys.push(isMac() ? '⌘' : 'Ctrl')
+      if (combo.alt) keys.push(isMac() ? '⌥' : 'Alt')
+      if (combo.shift) keys.push(isMac() ? '⇧' : 'Shift')
+      keys.push(combo.key.length === 1 ? combo.key.toUpperCase() : combo.key)
+      return keys
+    }
+
+    // A keycap strip instead of a text field: it reads like the chord you are about to press.
+    function ShortcutRecorder(props) {
+      const dict = t()
+      const nodeRef = React.useRef(null)
+      const [focused, setFocused] = React.useState(false)
+      React.useEffect(() => {
+        const node = nodeRef.current
+        if (!node || typeof node.focus !== 'function') return
+        try {
+          node.focus({ preventScroll: true })
+        } catch {
+          try {
+            node.focus()
+          } catch {}
+        }
+      }, [])
+      const keys = props.combo ? comboKeys(props.combo) : []
+      return h(
+        'div',
+        {
+          ref: nodeRef,
+          role: 'button',
+          tabIndex: 0,
+          'aria-label': dict.shortcutTitle,
+          style: focused ? { ...styles.recorder, ...styles.recorderOn } : styles.recorder,
+          onFocus: () => setFocused(true),
+          onBlur: () => setFocused(false),
+          onKeyDown: props.onKeyDown,
+        },
+        keys.length
+          ? keys.map((key, index) => h('span', { key: `${key}-${index}`, style: styles.keycap }, key))
+          : h('span', { style: styles.recorderHint }, dict.shortcutRecording),
+      )
+    }
+
     // --------------------------------------------------------------- clipboard
 
     function copyText(text, done) {
@@ -1163,7 +1207,54 @@ window.__ModuleLoader__.load({
       dialogTitle: { margin: 0, fontSize: 14, fontWeight: 600, lineHeight: '20px' },
       dialogText: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },
       dialogError: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-state-error-primary)' },
-      dialogActions: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 2 },
+      dialogActions: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 4 },
+      linkButton: {
+        border: 'none',
+        background: 'transparent',
+        padding: '4px 2px',
+        fontSize: 12,
+        color: 'var(--dsw-alias-label-tertiary)',
+        cursor: 'pointer',
+      },
+      recorder: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        alignSelf: 'center',
+        minWidth: 168,
+        minHeight: 54,
+        padding: '8px 18px',
+        border: '1px dashed var(--dsw-alias-border-l2)',
+        borderRadius: 10,
+        background: 'var(--dsw-alias-bg-layer-2)',
+        cursor: 'pointer',
+        outline: 'none',
+        boxSizing: 'border-box',
+        transition: 'border-color .12s ease, background .12s ease',
+      },
+      recorderOn: {
+        borderColor: 'var(--dsw-alias-brand-primary)',
+        borderStyle: 'solid',
+        background: 'var(--dsw-alias-interactive-bg-hover)',
+      },
+      keycap: {
+        minWidth: 22,
+        height: 24,
+        padding: '0 6px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        borderBottomWidth: 2,
+        borderRadius: 5,
+        background: 'var(--dsw-alias-bg-base)',
+        fontSize: 13,
+        fontWeight: 600,
+        lineHeight: 1,
+        color: 'var(--dsw-alias-label-primary)',
+      },
+      recorderHint: { margin: 0, fontSize: 12, textAlign: 'center', color: 'var(--dsw-alias-label-tertiary)' },
       preview: {
         margin: 0,
         padding: '8px 10px',
@@ -1375,11 +1466,17 @@ window.__ModuleLoader__.load({
         lineHeight: '24px',
         color: opts.primary
           ? 'var(--dsw-alias-bg-base)'
-          : opts.danger
+          : opts.subtle
+            ? 'var(--dsw-alias-label-tertiary)'
+            : opts.danger
             ? 'var(--dsw-alias-state-error-primary)'
             : 'var(--dsw-alias-label-secondary)',
         background: opts.primary ? 'var(--dsw-alias-button-primary-fill)' : 'transparent',
-        border: opts.primary ? '1px solid transparent' : '1px solid var(--dsw-alias-border-l2)',
+        border: opts.primary
+          ? '1px solid transparent'
+          : opts.subtle
+            ? '1px solid transparent'
+            : '1px solid var(--dsw-alias-border-l2)',
         borderRadius: 6,
         cursor: 'pointer',
         whiteSpace: 'nowrap',
@@ -1819,8 +1916,9 @@ window.__ModuleLoader__.load({
         }
         document.addEventListener('keydown', onKey, true)
         const node = nodeRef.current
-        // Focus the dialog itself; any input inside takes focus through autoFocus.
-        if (node && typeof node.focus === 'function') {
+        // Focus the dialog itself; any input inside takes focus through autoFocus. The shortcut
+        // recorder focuses its own keycap box instead, so it opts out.
+        if (!props.noAutoFocus && node && typeof node.focus === 'function') {
           try {
             node.focus({ preventScroll: true })
           } catch {}
@@ -1851,6 +1949,8 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { style: styles.dialogActions },
+            props.left ? props.left : null,
+            h('span', { style: { flex: 1 } }),
             button(dict.cancel, props.onCancel),
             button(props.confirmLabel || dict.create, props.onConfirm, {
               primary: true,
@@ -3231,13 +3331,12 @@ window.__ModuleLoader__.load({
             disabled: !shortDraft,
             onCancel: () => setDialog(null),
             onConfirm: saveShortcut,
+            noAutoFocus: true,
+            left: button(dict.shortcutDefault, resetShortcut, { subtle: true }),
           },
           h('p', { style: styles.dialogText }, dict.shortcutHint),
-          h('input', {
-            autoFocus: true,
-            readOnly: true,
-            value: shortDraft ? comboLabel(shortDraft) : dict.shortcutRecording,
-            'aria-label': dict.shortcutTitle,
+          h(ShortcutRecorder, {
+            combo: shortDraft,
             onKeyDown: (event) => {
               if (event.key === 'Tab') return
               event.preventDefault()
@@ -3250,18 +3349,12 @@ window.__ModuleLoader__.load({
               setShortError('')
               setShortDraft(combo)
             },
-            style: { ...styles.input, textAlign: 'center', fontWeight: 600, cursor: 'pointer' },
           }),
-          h('p', { style: styles.helpNote }, dict.shortcutNote),
+          h('p', { style: styles.recorderHint }, dict.shortcutNote),
           clash
-            ? h('p', { style: { ...styles.helpNote, color: 'var(--dsw-alias-state-warn-primary)' } }, dict.shortcutConflict(clash))
+            ? h('p', { style: { ...styles.recorderHint, color: 'var(--dsw-alias-state-warn-primary)' } }, dict.shortcutConflict(clash))
             : null,
-          shortError ? h('p', { style: styles.dialogError }, shortError) : null,
-          h(
-            'div',
-            { style: { display: 'flex', justifyContent: 'flex-end' } },
-            button(dict.shortcutDefault, resetShortcut),
-          ),
+          shortError ? h('p', { style: { ...styles.dialogError, textAlign: 'center' } }, shortError) : null,
         )
       } else if (dialog && dialog.kind === 'purge') {
         const count = dialog.ids.length
