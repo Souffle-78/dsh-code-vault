@@ -13,8 +13,9 @@
 | 位图图标 `assets/icon-180.png`（180×180 PNG） | ✅ yml 用 raw.githubusercontent 绝对地址引用 |
 | 截图 `screenshots.json` | ✅ 2 张：面板全景（封面）+ 代码块收藏按钮 |
 | 公开仓库 + `dsh-plugin` topic | ✅ https://github.com/Souffle-78/dsh-code-vault（已打 `dsh-plugin` / `deepseek-harness`） |
-| 上架 PR | ✅ https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15223 |
-| 仓库满 1 天 | ⏳ 2026-11-14 建仓，CI 会按小时自动重跑，满 24h 后自行转绿 |
+| 上架 PR | ✅ 已合入 https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15223 |
+| 仓库满 1 天 | ✅ `Submission gate` 已转绿 |
+| 市场收录 | ✅ https://awesome-dsh-plugin.com/p/Souffle-78/dsh-code-vault/ |
 | npm 包 | 暂不发布（先只走 GitHub 收录） |
 
 ## 1. 建仓与推送（已完成，留作记录）
