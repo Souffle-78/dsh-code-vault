@@ -18,7 +18,7 @@ Keep the code that shows up in a conversation — a shell command, a config file
 8. Every draft has **Move to vault**: pick a folder and it becomes a normal entry inside that folder.
 9. The tree on the left works like folders on a computer: **New folder** in the toolbar or **New subfolder** on the breadcrumb nests levels, **Rename** renames, and **Delete folder** removes only the folder — its subfolders and entries move up a level.
 10. To reorganise, drag a card onto a folder on the left, or use **More ▾ → Move to…** on the card and pick a target (including **Unsorted**).
-11. **More ▾ → Edit** opens a code editor with line numbers, bracket pairs, auto-indent and `⌘S` to save; the bar underneath lists problems (unbalanced brackets, invalid JSON, JS syntax errors) and clicking one jumps to that line.
+11. **More ▾ → Edit** opens a code editor with line numbers, bracket pairs, auto-indent and `⌘S` to save; the bar underneath lists problems (unbalanced brackets, invalid JSON, JS syntax errors) and clicking one jumps to that line; use "Show all" and drag the window edge to see the rest.
 
 ## Notes
 
