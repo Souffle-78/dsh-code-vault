@@ -22,6 +22,10 @@
 
 数据只存在当前浏览器的 `localStorage` 里，不联网、不上传，也不跨设备同步。
 
+## 更新日志
+
+每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
+
 ## 安装
 
 从 DSH 插件市场安装，或者在 **Plugins → Add plugin** 里填 GitHub 地址：

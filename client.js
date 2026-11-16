@@ -861,6 +861,7 @@ window.__ModuleLoader__.load({
         flexDirection: 'column',
         height: '100%',
         minHeight: 0,
+        overflow: 'hidden',
         gap: 12,
         padding: '18px 20px 20px',
         boxSizing: 'border-box',
@@ -876,6 +877,12 @@ window.__ModuleLoader__.load({
         background: 'var(--dsw-alias-interactive-bg-hover)',
         borderRadius: 8,
         padding: '6px 8px',
+      },
+      cardDragging: {
+        opacity: 0.4,
+        transform: 'scale(0.965)',
+        transition: 'transform .12s ease, opacity .12s ease',
+        boxShadow: 'none',
       },
       cardSelected: {
         borderColor: 'var(--dsw-alias-brand-primary)',
@@ -922,7 +929,9 @@ window.__ModuleLoader__.load({
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
-        boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
+        maxHeight: '86%',
+        overflowY: 'auto',
+        boxShadow: '0 18px 50px rgba(0,0,0,0.26)',
         outline: 'none',
       },
       dialogTitle: { margin: 0, fontSize: 14, fontWeight: 600, lineHeight: '20px' },
@@ -966,7 +975,8 @@ window.__ModuleLoader__.load({
         outline: 'none',
       },
       chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-      list: { flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 2 },
+      list: { display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 2 },
+      scroll: { flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 4, overscrollBehavior: 'contain' },
       card: {
         border: '1px solid var(--dsw-alias-border-l1)',
         background: 'var(--dsw-alias-bg-layer-1)',
@@ -1327,9 +1337,9 @@ window.__ModuleLoader__.load({
       tabOn: { color: 'var(--dsw-alias-label-primary)', background: 'var(--dsw-alias-bg-layer-2)', border: '1px solid var(--dsw-alias-border-l2)', fontWeight: 600 },
       tabsHint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)', marginLeft: 4 },
       split: { display: 'flex', gap: 12, alignItems: 'flex-start' },
-      tree: { width: 208, flex: '0 0 208px', display: 'flex', flexDirection: 'column', gap: 1, borderRight: '1px solid var(--dsw-alias-border-l2)', paddingRight: 10, minHeight: 120 },
+      tree: { width: 208, flex: '0 0 208px', display: 'flex', flexDirection: 'column', gap: 1, borderRight: '1px solid var(--dsw-alias-border-l2)', paddingRight: 10, minHeight: 120, position: 'sticky', top: 0, alignSelf: 'flex-start' },
       treeRow: { display: 'flex', alignItems: 'center', gap: 3, borderRadius: 8, padding: '4px 6px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)', border: '1px solid transparent' },
-      treeRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      treeRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600, boxShadow: 'inset 2px 0 0 var(--dsw-alias-brand-primary)' },
       treeRowDrop: { border: '1px dashed var(--dsw-alias-brand-primary)', background: 'var(--dsw-alias-bg-layer-2)' },
       treeChev: { width: 16, height: 16, lineHeight: '14px', textAlign: 'center', fontSize: 10, color: 'var(--dsw-alias-label-tertiary)', border: 0, background: 'transparent', cursor: 'pointer', padding: 0, flex: '0 0 16px' },
       treeName: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
@@ -1345,7 +1355,13 @@ window.__ModuleLoader__.load({
       folderBadge: { fontSize: 11, color: 'var(--dsw-alias-label-tertiary)', background: 'var(--dsw-alias-bg-layer-2)', borderRadius: 999, padding: '1px 7px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
       draftRow: { border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 10, padding: 10, background: 'var(--dsw-alias-bg-layer-1)', display: 'flex', flexDirection: 'column', gap: 5 },
       moveList: { display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 220, overflow: 'auto', border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 8, padding: 3 },
-      moveRow: { display: 'flex', alignItems: 'center', gap: 6, borderRadius: 6, padding: '4px 6px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)' },
+      moveRow: { display: 'flex', alignItems: 'center', gap: 8, borderRadius: 7, padding: '6px 8px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)', border: '1px solid transparent', marginBottom: 2 },
+      moveRowHover: { background: 'var(--dsw-alias-bg-layer-2)', borderColor: 'var(--dsw-alias-border-l2)' },
+      moveRowOn: { background: 'var(--dsw-alias-bg-layer-2)', borderColor: 'var(--dsw-alias-brand-primary)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      moveDot: { flex: '0 0 14px', width: 14, height: 14, borderRadius: '50%', border: '1px solid var(--dsw-alias-border-l3)', boxSizing: 'border-box' },
+      moveDotOn: { flex: '0 0 14px', width: 14, height: 14, borderRadius: '50%', border: '4px solid var(--dsw-alias-brand-primary)', background: 'var(--dsw-alias-bg-base)', boxSizing: 'border-box' },
+      moveLabel: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      moveCheck: { fontSize: 12, color: 'var(--dsw-alias-brand-primary)' },
       moveRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
       editArea: { width: '100%', boxSizing: 'border-box', minHeight: 150, resize: 'vertical', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.5, padding: 8, borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-base)', color: 'var(--dsw-alias-label-primary)' },
       hint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
@@ -1367,6 +1383,59 @@ window.__ModuleLoader__.load({
       return chain.join(' / ')
     }
 
+    // A browser drags the whole element by default, which turns a 40-line block into a
+    // card the size of the window. A small stand-in with the title and the first lines
+    // keeps the target readable while the source card shrinks in place.
+    const DRAG_GHOST_ID = 'code-vault-drag-ghost'
+    const dragGhostFor = (asset) => {
+      let node = document.getElementById(DRAG_GHOST_ID)
+      if (!node) {
+        node = document.createElement('div')
+        node.id = DRAG_GHOST_ID
+        document.body.appendChild(node)
+      }
+      node.setAttribute(
+        'style',
+        [
+          'position:fixed',
+          'top:-240px',
+          'left:0',
+          'width:264px',
+          'padding:9px 11px',
+          'border-radius:10px',
+          'box-sizing:border-box',
+          'border:1px solid var(--dsw-alias-brand-primary)',
+          'background:var(--dsw-alias-bg-layer-1)',
+          'box-shadow:0 12px 28px rgba(0,0,0,.22)',
+          'pointer-events:none',
+          'z-index:2147483000',
+        ].join(';'),
+      )
+      node.textContent = ''
+      const title = document.createElement('div')
+      title.textContent = titleOf(asset)
+      title.setAttribute(
+        'style',
+        'font:600 12px/1.4 inherit;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap',
+      )
+      const body = document.createElement('div')
+      body.textContent = previewOf(asset).split('\n').slice(0, 3).join('\n')
+      body.setAttribute(
+        'style',
+        'margin-top:3px;max-height:48px;overflow:hidden;font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dsw-alias-label-secondary);white-space:pre',
+      )
+      const foot = document.createElement('div')
+      foot.textContent = asset.tags.length ? `${asset.lang} · ${asset.tags.join(' · ')}` : asset.lang
+      foot.setAttribute(
+        'style',
+        'margin-top:5px;font:10px/1.3 inherit;color:var(--dsw-alias-label-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap',
+      )
+      node.appendChild(title)
+      node.appendChild(body)
+      node.appendChild(foot)
+      return node
+    }
+
     function AssetCard(props) {
       const dict = t()
       const asset = props.asset
@@ -1374,6 +1443,7 @@ window.__ModuleLoader__.load({
       const selected = Boolean(props.selected)
       const [flash, setFlash] = React.useState('')
       const [more, setMore] = React.useState(false)
+      const [dragging, setDragging] = React.useState(false)
       const flashTimer = React.useRef(0)
       React.useEffect(() => () => window.clearTimeout(flashTimer.current), [])
 
@@ -1459,15 +1529,20 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         {
-          style: styles.card,
+          style: dragging ? { ...styles.card, ...styles.cardDragging } : styles.card,
           draggable: true,
           title: dict.dragHint,
           onDragStart: (event) => {
             try {
               event.dataTransfer.setData('text/plain', asset.id)
               event.dataTransfer.effectAllowed = 'move'
+              if (typeof event.dataTransfer.setDragImage === 'function') {
+                event.dataTransfer.setDragImage(dragGhostFor(asset), 20, 18)
+              }
             } catch {}
+            setDragging(true)
           },
+          onDragEnd: () => setDragging(false),
         },
         head,
         body,
@@ -1707,6 +1782,7 @@ window.__ModuleLoader__.load({
       const [editTitle, setEditTitle] = React.useState('')
       const [editCode, setEditCode] = React.useState('')
       const [movePick, setMovePick] = React.useState('root')
+      const [moveHover, setMoveHover] = React.useState('')
       const [dragOver, setDragOver] = React.useState(null)
 
       const announce = (text, error) => {
@@ -2511,13 +2587,17 @@ window.__ModuleLoader__.load({
         toolbar,
         noticeNode,
         selectBar,
-        tab === 'favorites' ? favoritesBody : draftsBody,
-        helpOpen && tab === 'favorites' && snippets.length === 0
-          ? h(HelpBlock, { onOpenChat: openChat, showTitle: true })
-          : null,
-        helpOpen && tab === 'favorites' && snippets.length > 0
-          ? h(HelpBlock, { onOpenChat: openChat, showTitle: false })
-          : null,
+        h(
+          'div',
+          { style: styles.scroll },
+          tab === 'favorites' ? favoritesBody : draftsBody,
+          helpOpen && tab === 'favorites' && snippets.length === 0
+            ? h(HelpBlock, { onOpenChat: openChat, showTitle: true })
+            : null,
+          helpOpen && tab === 'favorites' && snippets.length > 0
+            ? h(HelpBlock, { onOpenChat: openChat, showTitle: false })
+            : null,
+        ),
         dialogNode,
       )
     }

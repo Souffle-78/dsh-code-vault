@@ -1,6 +1,6 @@
 {
   "name": "dsh-code-vault",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "description": "Collect code blocks from a conversation into a local vault with folders and a separate drafts box, all in a DSH sidebar panel: search, tags, batch actions, merge, and one-key insert. 把对话代码收进本地收藏夹与草稿箱、按文件夹分级管理，并一键插回输入框。",
@@ -36,7 +36,8 @@
     "icon.svg",
     "README.md",
     "assets",
-    "screenshots.json"
+    "screenshots.json",
+    "CHANGELOG.md"
   ],
   "dsh": {
     "bundle": {
