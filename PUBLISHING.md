@@ -16,7 +16,7 @@
 | 上架 PR | ✅ 已合入 https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15223 |
 | 仓库满 1 天 | ✅ `Submission gate` 已转绿 |
 | 市场收录 | ✅ https://awesome-dsh-plugin.com/p/Souffle-78/dsh-code-vault/ |
-| npm 包 | 暂不发布（先只走 GitHub 收录） |
+| npm 包 | 暂不发布 |
 
 ## 1. 建仓与推送（已完成，留作记录）
 
