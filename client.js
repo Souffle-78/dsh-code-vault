@@ -9,6 +9,7 @@ window.__ModuleLoader__.load({
     const STORE_KEY = 'dsh-session-assets:v1'
     const LANG_KEY = 'dsh-code-vault:lang'
     const LIMIT = 400
+    const TRASH_TTL = 30 * 24 * 60 * 60 * 1000
     const MAX_CODE = 200000
 
     // ---------------------------------------------------------------- language
@@ -69,14 +70,14 @@ window.__ModuleLoader__.load({
         mergeHint: 'Merging adds one new entry that fences every selected block in order. The originals stay.',
         create: 'Create',
         cancel: 'Cancel',
-        confirmDeleteOne: 'Delete this saved code? This cannot be undone.',
-        confirmDeleteMany: (n) => `Delete ${n} selected entries? This cannot be undone.`,
+        confirmDeleteOne: 'Move this entry to the recycle bin? It stays there for 30 days.',
+        confirmDeleteMany: (n) => `Move ${n} selected entries to the recycle bin? They stay there for 30 days.`,
         confirmMerge: (n) => `Merge ${n} selected entries into one new entry? The originals stay.`,
         merged: 'Merged into a new entry',
         mergeFailed: 'Could not merge — browser storage may be full',
         tagged: (n) => `Tag added to ${n} entries`,
         copiedMany: (n) => `Copied ${n} block(s)`,
-        removed: 'Deleted',
+        removed: 'Moved to the recycle bin',
         tagPrompt: 'Tag name, then Enter',
         confirmNote: 'This step needs one more click.',
         saveDraft: 'Save draft',
@@ -94,6 +95,19 @@ window.__ModuleLoader__.load({
         favoritesHint: 'Saved code, organised in folders',
         draftsHint: 'Scratch text — move it here when it becomes code',
         draftsEmpty: 'No drafts yet. Write something in the composer and press “Save draft” under it.',
+        trash: 'Recycle bin',
+        trashHint: 'Deleted entries rest here for 30 days',
+        trashEmpty: 'Nothing in the bin. Deleted entries show up here for 30 days.',
+        trashNote: 'Entries older than 30 days are removed automatically.',
+        restore: 'Restore',
+        restored: 'Restored',
+        deleteForever: 'Delete forever',
+        emptyTrash: 'Empty bin',
+        emptyTrashText: (n) => `Permanently delete ${n} entries in the bin? This cannot be undone.`,
+        purged: 'Deleted permanently',
+        purgeOne: 'Delete this entry forever? This cannot be undone.',
+        purgeMany: (n) => `Permanently delete ${n} entries? This cannot be undone.`,
+        deletedOn: (stamp) => `deleted ${stamp}`,
         toFavorites: 'Move to vault',
         draftMoved: (n) => `Moved ${n} draft(s) to the vault`,
         moved: (n) => `Moved ${n} item(s)`,
@@ -198,14 +212,14 @@ window.__ModuleLoader__.load({
         mergeHint: '合并会按顺序把选中的代码各包一层代码块，生成一条新收藏；原来的仍然保留。',
         create: '创建',
         cancel: '取消',
-        confirmDeleteOne: '删除这条收藏？此操作不可撤销。',
-        confirmDeleteMany: (n) => `删除选中的 ${n} 条收藏？此操作不可撤销。`,
+        confirmDeleteOne: '把这条放进回收站？会在里面保留 30 天。',
+        confirmDeleteMany: (n) => `把选中的 ${n} 条放进回收站？会在里面保留 30 天。`,
         confirmMerge: (n) => `把选中的 ${n} 条合并成一条新收藏？原收藏会保留。`,
         merged: '已合并为一条新收藏',
         mergeFailed: '合并失败，浏览器存储可能已满',
         tagged: (n) => `已给 ${n} 条加上标签`,
         copiedMany: (n) => `已复制 ${n} 段代码`,
-        removed: '已删除',
+        removed: '已放进回收站',
         tagPrompt: '标签名，回车确认',
         confirmNote: '这一步需要再点一次确认。',
         saveDraft: '存草稿',
@@ -223,6 +237,19 @@ window.__ModuleLoader__.load({
         favoritesHint: '收藏的代码，按文件夹分类',
         draftsHint: '半成品先放这里，整理好再移进收藏夹',
         draftsEmpty: '草稿箱是空的。在输入框写点东西，点它下面的「存草稿」。',
+        trash: '回收站',
+        trashHint: '删除的条目在这里放 30 天',
+        trashEmpty: '回收站是空的。删掉的收藏和草稿会先放这里 30 天。',
+        trashNote: '超过 30 天的条目会被自动清除。',
+        restore: '恢复',
+        restored: '已恢复',
+        deleteForever: '彻底删除',
+        emptyTrash: '清空回收站',
+        emptyTrashText: (n) => `彻底删除回收站里的 ${n} 条？此操作不可撤销。`,
+        purged: '已彻底删除',
+        purgeOne: '彻底删除这一条？此操作不可撤销。',
+        purgeMany: (n) => `彻底删除选中的 ${n} 条？此操作不可撤销。`,
+        deletedOn: (stamp) => `${stamp} 删除`,
         toFavorites: '移入收藏夹',
         draftMoved: (n) => `已把 ${n} 条草稿移入收藏夹`,
         moved: (n) => `已移动 ${n} 条`,
@@ -406,6 +433,7 @@ window.__ModuleLoader__.load({
         kind: raw.kind === 'draft' ? 'draft' : 'snippet',
         folderId: typeof raw.folderId === 'string' && raw.folderId ? raw.folderId : null,
         createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(),
+        trashedAt: Number.isFinite(raw.trashedAt) && raw.trashedAt > 0 ? raw.trashedAt : null,
       }
     }
 
@@ -467,7 +495,10 @@ window.__ModuleLoader__.load({
         folders = []
       }
       const known = new Set(folders.map((folder) => folder.id))
-      items = items.map((item) => (item.folderId && !known.has(item.folderId) ? { ...item, folderId: null } : item))
+      const now = Date.now()
+      items = items
+        .filter((item) => !item.trashedAt || now - item.trashedAt < TRASH_TTL)
+        .map((item) => (item.folderId && !known.has(item.folderId) ? { ...item, folderId: null } : item))
       state = { items, folders }
       return state
     }
@@ -483,7 +514,7 @@ window.__ModuleLoader__.load({
       }
       items.length = Math.min(items.length, LIMIT)
       const folders = sanitizeFolders(next.folders || [])
-      const value = { version: 3, items, folders }
+      const value = { version: 4, items, folders }
       state = value
       savedSigs = null
       try {
@@ -499,8 +530,15 @@ window.__ModuleLoader__.load({
     }
 
     // Reads for the fence, the quick picker and the panel all start from a plain item list.
+    // Anything sitting in the recycle bin is excluded; `readTrash` is the bin's own view.
     function readAll() {
-      return readState().items
+      return readState().items.filter((item) => !item.trashedAt)
+    }
+
+    function readTrash() {
+      return readState()
+        .items.filter((item) => Boolean(item.trashedAt))
+        .sort((a, b) => (b.trashedAt || 0) - (a.trashedAt || 0))
     }
 
     let savedSigs = null
@@ -549,7 +587,7 @@ window.__ModuleLoader__.load({
       if (!item) return null
       const current = readState()
       const dup = current.items.find(
-        (x) => x.code === item.code && x.lang === item.lang && x.kind === item.kind,
+        (x) => !x.trashedAt && x.code === item.code && x.lang === item.lang && x.kind === item.kind,
       )
       if (dup) return dup
       return writeState({ items: [item, ...current.items], folders: current.folders }) ? item : null
@@ -574,6 +612,42 @@ window.__ModuleLoader__.load({
         return { ...merged, id: item.id, kind: item.kind, folderId: merged.folderId }
       })
       if (!changed) return false
+      return writeState({ items, folders: current.folders })
+    }
+
+    // Deleting is reversible: entries are stamped instead of dropped, and `readState`
+    // discards stamps older than TRASH_TTL on the next read.
+    function trashItems(ids) {
+      const set = new Set(ids)
+      const current = readState()
+      const now = Date.now()
+      let changed = false
+      const items = current.items.map((item) => {
+        if (!set.has(item.id) || item.trashedAt) return item
+        changed = true
+        return { ...item, trashedAt: now }
+      })
+      if (!changed) return false
+      return writeState({ items, folders: current.folders })
+    }
+
+    function restoreItems(ids) {
+      const set = new Set(ids)
+      const current = readState()
+      let changed = false
+      const items = current.items.map((item) => {
+        if (!set.has(item.id) || !item.trashedAt) return item
+        changed = true
+        return { ...item, trashedAt: null }
+      })
+      if (!changed) return false
+      return writeState({ items, folders: current.folders })
+    }
+
+    function emptyTrash() {
+      const current = readState()
+      const items = current.items.filter((item) => !item.trashedAt)
+      if (items.length === current.items.length) return false
       return writeState({ items, folders: current.folders })
     }
 
@@ -625,7 +699,7 @@ window.__ModuleLoader__.load({
         (item) => item.kind === 'snippet' && item.lang === (lang || '') && item.code === code,
       )
       if (!hit) return false
-      return removeAsset(hit.id)
+      return trashItems([hit.id])
     }
 
     function folderMap() {
@@ -1771,6 +1845,22 @@ window.__ModuleLoader__.load({
         whiteSpace: 'pre',
         overflow: 'auto',
       },
+      trashRow: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        padding: 12,
+        border: '1px solid var(--dsw-alias-border-l1)',
+        borderRadius: 10,
+        background: 'var(--dsw-alias-card-fill)',
+      },
+      trashHead: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        fontSize: 12,
+        color: 'var(--dsw-alias-label-tertiary)',
+      },
       lintHead: {
         display: 'flex',
         alignItems: 'baseline',
@@ -2121,6 +2211,37 @@ window.__ModuleLoader__.load({
 
     // A plain recursive list instead of a tree widget: folders read top-down, the chevron only
     // shows when there is something to unfold, and every row is a drop target for a card.
+    const formatStamp = (stamp) => {
+      const date = new Date(stamp)
+      const pad = (n) => String(n).padStart(2, '0')
+      return `${date.getMonth() + 1}/${date.getDate()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+    }
+
+    function TrashRow(props) {
+      const dict = t()
+      const asset = props.asset
+      const preview = previewOf(asset)
+      return h(
+        'div',
+        { style: styles.trashRow },
+        h(
+          'div',
+          { style: styles.cardHead },
+          h('span', { style: styles.cardTitle, title: asset.title }, asset.title),
+          h('span', { style: styles.meta }, asset.lang || 'text'),
+          h('span', { style: { ...styles.meta, marginLeft: 'auto' } }, dict.deletedOn(formatStamp(asset.trashedAt))),
+        ),
+        h('pre', { style: styles.pre }, preview.length > 600 ? `${preview.slice(0, 600)}\n…` : preview),
+        h(
+          'div',
+          { style: styles.cardFoot },
+          h('span', { style: { flex: 1 } }),
+          button(dict.restore, () => props.onRestore(asset.id)),
+          button(dict.deleteForever, () => props.onPurge(asset.id), { danger: true }),
+        ),
+      )
+    }
+
     function FolderTree(props) {
       const dict = t()
       const children = new Map()
@@ -2232,6 +2353,7 @@ window.__ModuleLoader__.load({
     function Panel() {
       const dict = t()
       const [items, setItems] = React.useState(() => readAll().slice())
+      const [trash, setTrash] = React.useState(() => readTrash().slice())
       const [folders, setFolders] = React.useState(() => readState().folders.slice())
       const [tab, setTab] = React.useState('favorites')
       const [current, setCurrent] = React.useState('all')
@@ -2270,6 +2392,7 @@ window.__ModuleLoader__.load({
         () =>
           subscribe(() => {
             setItems(readAll().slice())
+            setTrash(readTrash().slice())
             setFolders(readState().folders.slice())
           }),
         [],
@@ -2292,7 +2415,7 @@ window.__ModuleLoader__.load({
 
       const snippets = items.filter((item) => item.kind === 'snippet')
       const drafts = items.filter((item) => item.kind === 'draft')
-      const tabItems = tab === 'drafts' ? drafts : snippets
+      const tabItems = tab === 'drafts' ? drafts : tab === 'trash' ? trash : snippets
       const needle = query.trim().toLowerCase()
       const searching = needle !== ''
       const within = (item) => {
@@ -2303,7 +2426,7 @@ window.__ModuleLoader__.load({
       }
       const view = tabItems.filter(
         (item) =>
-          within(item) &&
+          (tab === 'trash' || within(item)) &&
           (!langFilter || item.lang === langFilter) &&
           (!searching || searchTextOf(item).includes(needle)),
       )
@@ -2400,10 +2523,32 @@ window.__ModuleLoader__.load({
       }
 
       const runDelete = (ids) => {
-        const ok = removeItems(ids)
+        const ok = trashItems(ids)
         setDialog(null)
         setSelected((prev) => prev.filter((id) => !ids.includes(id)))
         announce(ok ? dict.removed : dict.storeFailed, !ok)
+      }
+
+      const restoreOne = (id) => {
+        const ok = restoreItems([id])
+        announce(ok ? dict.restored : dict.storeFailed, !ok)
+      }
+
+      const askPurge = (id) => {
+        setDialogError('')
+        setDialog({ kind: 'purge', ids: [id] })
+      }
+
+      const runPurge = (ids) => {
+        const ok = removeItems(ids)
+        setDialog(null)
+        announce(ok ? dict.purged : dict.storeFailed, !ok)
+      }
+
+      const runEmptyTrash = () => {
+        const ok = emptyTrash()
+        setDialog(null)
+        announce(ok ? dict.purged : dict.storeFailed, !ok)
       }
 
       const openMerge = () => {
@@ -2622,7 +2767,15 @@ window.__ModuleLoader__.load({
           primary: tab === 'drafts',
           title: dict.draftsHint,
         }),
-        h('span', { style: styles.tabsHint }, tab === 'drafts' ? dict.draftsHint : dict.favoritesHint),
+        button(`${dict.trash} · ${trash.length}`, () => switchTab('trash'), {
+          primary: tab === 'trash',
+          title: dict.trashHint,
+        }),
+        h(
+          'span',
+          { style: styles.tabsHint },
+          tab === 'trash' ? dict.trashHint : tab === 'drafts' ? dict.draftsHint : dict.favoritesHint,
+        ),
       )
 
       const toolbar = h(
@@ -2634,15 +2787,24 @@ window.__ModuleLoader__.load({
           onChange: (e) => setQuery(e.target.value),
           style: styles.input,
         }),
-        button(selectMode ? dict.exitSelect : dict.select, () => {
-          if (selectMode) exitSelect()
-          else setSelectMode(true)
-        }, { disabled: tabItems.length === 0 }),
+        tab === 'trash'
+          ? null
+          : button(selectMode ? dict.exitSelect : dict.select, () => {
+              if (selectMode) exitSelect()
+              else setSelectMode(true)
+            }, { disabled: tabItems.length === 0 }),
         tab === 'favorites'
           ? button(
               current !== 'all' && current !== 'unfiled' ? dict.newSubfolder : dict.newFolder,
               () => openFolderCreate(current !== 'all' && current !== 'unfiled' ? current : null),
             )
+          : null,
+        tab === 'trash'
+          ? button(dict.emptyTrash, () => {
+              if (!trash.length) return
+              setDialogError('')
+              setDialog({ kind: 'emptyTrash' })
+            }, { danger: true, disabled: trash.length === 0 })
           : null,
         button(dict.export, exportAll, { disabled: items.length === 0 }),
         button(dict.import, () => fileRef.current && fileRef.current.click()),
@@ -2659,7 +2821,7 @@ window.__ModuleLoader__.load({
         }),
       )
 
-      const selectBar = selectMode
+      const selectBar = selectMode && tab !== 'trash'
         ? h(
             'div',
             { style: styles.selBar },
@@ -2867,6 +3029,27 @@ window.__ModuleLoader__.load({
           : h('p', { style: styles.empty }, searching || langFilter ? dict.searchEmpty : dict.draftsEmpty),
       )
 
+      const trashBody = h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        h('p', { style: styles.meta }, dict.trashNote),
+        chips,
+        view.length
+          ? h(
+              'div',
+              { style: styles.list },
+              view.map((asset) =>
+                h(TrashRow, {
+                  key: asset.id,
+                  asset,
+                  onRestore: restoreOne,
+                  onPurge: askPurge,
+                }),
+              ),
+            )
+          : h('p', { style: styles.empty }, searching || langFilter ? dict.searchEmpty : dict.trashEmpty),
+      )
+
       // Dialogs -----------------------------------------------------------------
 
       let dialogNode = null
@@ -2882,6 +3065,31 @@ window.__ModuleLoader__.load({
             onConfirm: () => runDelete(dialog.ids),
           },
           h('p', { style: styles.dialogText }, count > 1 ? dict.confirmDeleteMany(count) : dict.confirmDeleteOne),
+        )
+      } else if (dialog && dialog.kind === 'purge') {
+        const count = dialog.ids.length
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.deleteForever,
+            confirmLabel: dict.deleteForever,
+            danger: true,
+            onCancel: () => setDialog(null),
+            onConfirm: () => runPurge(dialog.ids),
+          },
+          h('p', { style: styles.dialogText }, count > 1 ? dict.purgeMany(count) : dict.purgeOne),
+        )
+      } else if (dialog && dialog.kind === 'emptyTrash') {
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.emptyTrash,
+            confirmLabel: dict.emptyTrash,
+            danger: true,
+            onCancel: () => setDialog(null),
+            onConfirm: runEmptyTrash,
+          },
+          h('p', { style: styles.dialogText }, dict.emptyTrashText(trash.length)),
         )
       } else if (dialog && dialog.kind === 'tag') {
         dialogNode = h(
@@ -3087,7 +3295,7 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { style: styles.scroll },
-          tab === 'favorites' ? favoritesBody : draftsBody,
+          tab === 'favorites' ? favoritesBody : tab === 'drafts' ? draftsBody : trashBody,
           helpOpen && tab === 'favorites' && snippets.length === 0
             ? h(HelpBlock, { onOpenChat: openChat, showTitle: true })
             : null,

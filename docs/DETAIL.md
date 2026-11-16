@@ -17,8 +17,9 @@ Keep the code that shows up in a conversation — a shell command, a config file
 7. While a draft is half-written, **Save draft** under the composer sends it to the **Drafts** tab (the second tab at the top), not to the vault; saving the same draft twice does not duplicate it.
 8. Every draft has **Move to vault**: pick a folder and it becomes a normal entry inside that folder.
 9. The tree on the left works like folders on a computer: **New folder** in the toolbar or **New subfolder** on the breadcrumb nests levels, **Rename** renames, and **Delete folder** removes only the folder — its subfolders and entries move up a level.
-10. To reorganise, drag a card onto a folder on the left, or use **More ▾ → Move to…** on the card and pick a target (including **Unsorted**).
-11. **More ▾ → Edit** opens a code editor with line numbers, bracket pairs, auto-indent and `⌘S` to save; the bar underneath lists problems (unbalanced brackets, invalid JSON, JS syntax errors) and clicking one jumps to that line; use "Show all" and drag the window edge to see the rest.
+10. Deleting never loses code: single delete, batch delete and the fence's "unsave" move entries to the **recycle bin** for 30 days; restore them or delete them forever there, empty the bin in one go, and anything older than 30 days is removed automatically.
+11. To reorganise, drag a card onto a folder on the left, or use **More ▾ → Move to…** on the card and pick a target (including **Unsorted**).
+12. **More ▾ → Edit** opens a code editor with line numbers, bracket pairs, auto-indent and `⌘S` to save; the bar underneath lists problems (unbalanced brackets, invalid JSON, JS syntax errors) and clicking one jumps to that line; use "Show all" and drag the window edge to see the rest.
 
 ## Notes
 
