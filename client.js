@@ -54,7 +54,6 @@ window.__ModuleLoader__.load({
         storeFailed: 'Could not write to browser storage — it may be full',
         searchEmpty: 'Nothing matches this search.',
         how: 'How it works',
-        hideHow: 'Hide',
         step1: 'In a conversation, every code block has a “Save to vault” button in its bottom-right corner.',
         step2: 'Saved code lands in Vault. Make folders and drag cards onto them — nested folders work like files on a computer.',
         step3: 'Half-written text is better kept as a draft: use “Save draft” under the composer, then move it here when it is ready.',
@@ -211,7 +210,6 @@ window.__ModuleLoader__.load({
         storeFailed: '浏览器存储写入失败，可能空间已满',
         searchEmpty: '没有匹配的内容。',
         how: '怎么用',
-        hideHow: '收起',
         step1: '在对话里，每个代码块右下角都有一个「收藏代码块」按钮。',
         step2: '收藏的代码进「收藏夹」；可以建文件夹，把卡片拖到左侧文件夹里分类，文件夹还能再套文件夹。',
         step3: '写到一半的文字先存「草稿箱」更合适：输入框下方点「存草稿」，整理好再移进收藏夹。',
@@ -1216,14 +1214,6 @@ window.__ModuleLoader__.load({
       dialogText: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },
       dialogError: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-state-error-primary)' },
       dialogActions: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 4 },
-      linkButton: {
-        border: 'none',
-        background: 'transparent',
-        padding: '4px 2px',
-        fontSize: 12,
-        color: 'var(--dsw-alias-label-tertiary)',
-        cursor: 'pointer',
-      },
       recorder: {
         display: 'flex',
         alignItems: 'center',
@@ -1266,7 +1256,6 @@ window.__ModuleLoader__.load({
       guideStep: { margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--dsw-alias-label-primary)' },
       guideDivider: { height: 1, background: 'var(--dsw-alias-border-l1)', margin: '2px 0' },
       guideLine: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },
-      guideNote: { margin: 0, fontSize: 11, lineHeight: '16px', color: 'var(--dsw-alias-label-tertiary)' },
       preview: {
         margin: 0,
         padding: '8px 10px',
@@ -1964,6 +1953,7 @@ window.__ModuleLoader__.load({
             props.left ? props.left : null,
             h('span', { style: { flex: 1 } }),
             props.singleAction ? null : button(dict.cancel, props.onCancel),
+            props.extraActions ? props.extraActions : null,
             button(props.confirmLabel || dict.create, props.onConfirm, {
               primary: true,
               danger: props.danger,
@@ -2603,7 +2593,6 @@ window.__ModuleLoader__.load({
       const [expanded, setExpanded] = React.useState([])
       const [query, setQuery] = React.useState('')
       const [langFilter, setLangFilter] = React.useState('')
-      const [helpOpen, setHelpOpen] = React.useState(() => readAll().length === 0)
       const [notice, setNotice] = React.useState('')
       const [noticeError, setNoticeError] = React.useState(false)
       const noticeTimer = React.useRef(0)
@@ -2794,10 +2783,16 @@ window.__ModuleLoader__.load({
         announce(ok ? dict.purged : dict.storeFailed, !ok)
       }
 
-      const openShortcut = () => {
+      // Opened from the guide, the shortcut editor goes back to the guide instead of dumping the
+      // user into the panel. `fromGuide` is explicit so click events cannot turn it on by accident.
+      const openShortcut = (fromGuide) => {
         setShortError('')
         setShortDraft(readCombo())
-        setDialog({ kind: 'shortcut' })
+        setDialog({ kind: 'shortcut', fromGuide: fromGuide === true })
+      }
+
+      const closeShortcut = () => {
+        setDialog(dialog && dialog.fromGuide ? { kind: 'guide' } : null)
       }
 
       const saveShortcut = () => {
@@ -2806,13 +2801,22 @@ window.__ModuleLoader__.load({
           return
         }
         const ok = writeCombo(shortDraft)
-        setDialog(null)
-        announce(ok ? dict.shortcutSaved : dict.storeFailed, !ok)
+        if (!ok) {
+          // Keep the dialog open: the chord is still on screen and retrying is one click away.
+          setShortError(dict.storeFailed)
+          return
+        }
+        announce(dict.shortcutSaved, false)
+        closeShortcut()
       }
 
       const resetShortcut = () => {
-        writeCombo(DEFAULT_COMBO)
-        setDialog(null)
+        if (!writeCombo(DEFAULT_COMBO)) {
+          setShortError(dict.storeFailed)
+          return
+        }
+        setShortError('')
+        setShortDraft(DEFAULT_COMBO)
         announce(dict.shortcutReset, false)
       }
 
@@ -2941,6 +2945,21 @@ window.__ModuleLoader__.load({
           .filter(Boolean)
           .slice(0, 6)
         if (!segments.length) return
+
+        // Creating a path that already ends in an existing folder is a mistake worth reporting:
+        // reusing middle segments is convenient ("项目A / 前端"), silently reusing the last one is not.
+        let probe = dialog.parentId || null
+        for (let index = 0; index < segments.length; index += 1) {
+          const existing = readState().folders.find(
+            (folder) => folder.name === segments[index].slice(0, 40) && (folder.parentId || null) === probe,
+          )
+          if (index === segments.length - 1 && existing) {
+            setDialogError(dict.folderExists)
+            return
+          }
+          probe = existing ? existing.id : null
+        }
+
         let parentId = dialog.parentId || null
         const touched = []
         for (const segment of segments) {
@@ -3262,9 +3281,7 @@ window.__ModuleLoader__.load({
               : current === 'all' || current === 'unfiled'
                 ? snippets.length
                   ? h('p', { style: styles.empty }, dict.searchEmpty)
-                  : helpOpen
-                    ? null
-                    : h('p', { style: styles.empty }, dict.empty)
+                  : null
                 : h(
                     'div',
                     { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
@@ -3345,6 +3362,7 @@ window.__ModuleLoader__.load({
             onCancel: () => setDialog(null),
             onConfirm: () => setDialog(null),
             singleAction: true,
+            extraActions: button(dict.changeShortcut, () => openShortcut(true)),
           },
           h('p', { style: styles.guideStep }, dict.step1),
           h('p', { style: styles.guideStep }, dict.step2),
@@ -3353,12 +3371,7 @@ window.__ModuleLoader__.load({
           h('div', { style: styles.guideDivider }),
           line(dict.guideShortcut(shortcutLabel())),
           line(dict.trashHint),
-          h(
-            'div',
-            { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
-            h('p', { style: styles.guideNote }, dict.guideTip),
-            button(dict.changeShortcut, openShortcut, { subtle: true }),
-          ),
+          line(dict.guideTip),
         )
       } else if (dialog && dialog.kind === 'shortcut') {
         const conflict = shortDraft ? comboConflictLabel(shortDraft) : ''
@@ -3369,7 +3382,7 @@ window.__ModuleLoader__.load({
             title: dict.shortcutTitle,
             confirmLabel: dict.saveChanges,
             disabled: !shortDraft,
-            onCancel: () => setDialog(null),
+            onCancel: closeShortcut,
             onConfirm: saveShortcut,
             noAutoFocus: true,
             left: button(dict.shortcutDefault, resetShortcut, { subtle: true }),
@@ -3626,11 +3639,8 @@ window.__ModuleLoader__.load({
           'div',
           { style: styles.scroll },
           tab === 'favorites' ? favoritesBody : tab === 'drafts' ? draftsBody : trashBody,
-          helpOpen && tab === 'favorites' && snippets.length === 0
+          tab === 'favorites' && snippets.length === 0 && (current === 'all' || current === 'unfiled')
             ? h(HelpBlock, { onOpenChat: openChat, onShortcut: openShortcut, showTitle: true })
-            : null,
-          helpOpen && tab === 'favorites' && snippets.length > 0
-            ? h(HelpBlock, { onOpenChat: openChat, onShortcut: openShortcut, showTitle: false })
             : null,
         ),
         dialogNode,
