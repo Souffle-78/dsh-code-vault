@@ -1392,6 +1392,15 @@ window.__ModuleLoader__.load({
       const lines = value.split('\n')
       const report = lintCode(value, props.lang, Boolean(props.titleEmpty), dict)
       const issues = report.issues
+      const lintRef = React.useRef(null)
+      const [metrics, setMetrics] = React.useState({ top: 0, height: 0, client: 0 })
+      const measure = () => {
+        const node = lintRef.current
+        if (!node) return
+        const client = node.clientHeight || 0
+        const height = node.scrollHeight || 0
+        setMetrics({ top: node.scrollTop || 0, height, client })
+      }
       const errorLines = new Set(issues.filter((issue) => issue.level === 'error' && issue.line).map((issue) => issue.line))
       const warnLines = new Set(issues.filter((issue) => issue.level === 'warn' && issue.line).map((issue) => issue.line))
 
@@ -1407,6 +1416,10 @@ window.__ModuleLoader__.load({
           node.setSelectionRange(spot.start, spot.end)
         } catch {}
       })
+
+      React.useEffect(() => {
+        measure()
+      }, [value])
 
       const commit = (next, start, end) => {
         caretRef.current = { start, end: end === undefined ? start : end }
@@ -1539,12 +1552,15 @@ window.__ModuleLoader__.load({
           'div',
           { style: styles.lintHead },
           report.total ? h('span', { style: styles.lintCount }, dict.lintCount(report.total)) : null,
-          h('span', { style: styles.hint }, dict.editorHelp),
+          h('span', { style: styles.lintHint }, dict.editorHelp),
         ),
         h(
           'div',
-          { style: styles.lintBox },
-          issues.map((issue, i) =>
+          { style: styles.lintWrap },
+          h(
+            'div',
+            { ref: lintRef, style: styles.lintBox, onScroll: measure },
+            issues.map((issue, i) =>
             h(
               'button',
               {
@@ -1566,9 +1582,20 @@ window.__ModuleLoader__.load({
               issue.text,
             ),
           ),
-          issues.length === 0 ? h('span', { style: styles.lintOk }, dict.lintOk) : null,
-          report.total > issues.length
-            ? h('span', { style: styles.lintMore }, dict.lintMore(report.total - issues.length))
+            issues.length === 0 ? h('span', { style: styles.lintOk }, dict.lintOk) : null,
+            report.total > issues.length
+              ? h('span', { style: styles.lintMore }, dict.lintMore(report.total - issues.length))
+              : null,
+          ),
+          metrics.height > metrics.client + 1
+            ? h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  ...styles.lintThumb,
+                  height: Math.max(16, (metrics.client * metrics.client) / metrics.height),
+                  top: (metrics.top / Math.max(1, metrics.height - metrics.client)) * (metrics.client - Math.max(16, (metrics.client * metrics.client) / metrics.height)),
+                },
+              })
             : null,
         ),
       )
@@ -1749,29 +1776,42 @@ window.__ModuleLoader__.load({
       lintBox: {
         display: 'flex',
         flexDirection: 'column',
+        flex: 1,
+        minWidth: 0,
         gap: 1,
-        height: 46,
+        height: 52,
         overflowY: 'auto',
         overflowX: 'hidden',
-        paddingRight: 2,
+        scrollbarWidth: 'none',
+        paddingRight: 8,
+      },
+      lintWrap: { position: 'relative', display: 'flex' },
+      lintHint: { fontSize: 10, color: 'var(--dsw-alias-label-tertiary)', whiteSpace: 'nowrap' },
+      lintThumb: {
+        position: 'absolute',
+        right: 0,
+        width: 4,
+        borderRadius: 2,
+        background: 'var(--dsw-alias-border-l3)',
+        pointerEvents: 'none',
       },
       lintRow: {
         border: 0,
         background: 'transparent',
         padding: 0,
         textAlign: 'left',
-        fontSize: 11,
-        lineHeight: '14px',
-        font: 'inherit',
+        fontSize: 10,
+        lineHeight: '13px',
+        fontFamily: 'inherit',
         display: 'block',
         maxWidth: '100%',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
       },
-      lintOk: { fontSize: 11, lineHeight: '14px', color: 'var(--dsw-alias-state-success-primary)' },
-      lintCount: { fontSize: 11, color: 'var(--dsw-alias-state-warn-primary)', fontWeight: 600 },
-      lintMore: { fontSize: 11, lineHeight: '14px', color: 'var(--dsw-alias-label-tertiary)' },
+      lintOk: { fontSize: 10, lineHeight: '13px', color: 'var(--dsw-alias-state-success-primary)' },
+      lintCount: { fontSize: 10, color: 'var(--dsw-alias-state-warn-primary)', fontWeight: 600 },
+      lintMore: { fontSize: 10, lineHeight: '13px', color: 'var(--dsw-alias-label-tertiary)' },
       gutterBad: { color: 'var(--dsw-alias-state-error-primary)', fontWeight: 600 },
       gutterWarn: { color: 'var(--dsw-alias-state-warn-primary)' },
       unsavedBadge: { color: 'var(--dsw-alias-state-warn-primary)' },

@@ -1,6 +1,6 @@
 {
   "name": "dsh-code-vault",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "private": true,
   "type": "module",
   "description": "Collect code blocks from a DSH conversation into a local vault with drafts, nested folders, a code editor with lightweight checks, and one-keystroke insert back into the composer. 把对话里的代码收进本地收藏夹：草稿箱、文件夹分级、带检查的编辑器，一键插回输入框。",
