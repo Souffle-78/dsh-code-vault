@@ -1,6 +1,6 @@
 {
   "name": "dsh-code-vault",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "description": "DSH sidebar panel that saves code blocks from a conversation into a local vault with folders, drafts, a 30-day recycle bin, quick insert (Cmd+Shift+K) and a lightweight editor. Local only, no server.",

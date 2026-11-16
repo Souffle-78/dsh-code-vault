@@ -13,7 +13,7 @@ Keep the code that shows up in a conversation — a shell command, a config file
 3. Open the bookmark icon in the left sidebar. The panel lists everything saved: search by code, language or tag, add tags, copy, delete, export/import JSON, or **Insert** to put the block back into the composer and keep editing.
 4. Click **Select** in the toolbar to batch copy, batch tag or batch delete selected blocks (deleting asks for confirmation first).
 5. With two or more selected, **Merge into new entry** combines them into one new markdown entry in list order — edit the title, check the preview, then confirm.
-6. Press **⌘⇧K** (`Ctrl+Shift+K` on Windows and Linux) anywhere to open the quick-insert overlay: type to search, ↑↓ to choose, Enter to insert, Esc to close.
+6. Press **⌘⇧K** (`Ctrl+Shift+K` on Windows and Linux) anywhere to open the quick-insert overlay: type to search, ↑↓ to choose, Enter to insert, Esc to close. Dislike the chord? Hit **Shortcut** in the panel header and record your own — it must include ⌘/Ctrl or ⌥/Alt, clashes with DSH's own chords are flagged, and one button restores the default.
 7. While a draft is half-written, **Save draft** under the composer sends it to the **Drafts** tab (the second tab at the top), not to the vault; saving the same draft twice does not duplicate it.
 8. Every draft has **Move to vault**: pick a folder and it becomes a normal entry inside that folder.
 9. The tree on the left works like folders on a computer: **New folder** in the toolbar or **New subfolder** on the breadcrumb nests levels, **Rename** renames, and **Delete folder** removes only the folder — its subfolders and entries move up a level.

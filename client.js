@@ -8,6 +8,15 @@ window.__ModuleLoader__.load({
     // Kept from the 0.1.0 name on purpose: assets saved before the rename stay readable.
     const STORE_KEY = 'dsh-session-assets:v1'
     const LANG_KEY = 'dsh-code-vault:lang'
+    const SHORTCUT_KEY = 'dsh-code-vault:shortcut'
+    const DEFAULT_COMBO = { mod: true, shift: true, alt: false, key: 'k' }
+    // Chords DSH itself (or the browser) already owns — saving one of these is allowed but
+    // flagged, because the host listener may win.
+    const KNOWN_COMBOS = [
+      'Mod+B', 'Mod+K', 'Mod+P', 'Mod+/', 'Mod+,',
+      'Mod+Shift+R', 'Mod+Shift+,', 'Mod+Shift+.',
+      'Alt+Mod+Enter', 'Alt+Mod+G', 'Alt+Mod+,',
+    ]
     const LIMIT = 400
     const TRASH_TTL = 30 * 24 * 60 * 60 * 1000
     const MAX_CODE = 200000
@@ -108,6 +117,17 @@ window.__ModuleLoader__.load({
         purgeOne: 'Delete this entry forever? This cannot be undone.',
         purgeMany: (n) => `Permanently delete ${n} entries? This cannot be undone.`,
         deletedOn: (stamp) => `deleted ${stamp}`,
+        shortcut: 'Shortcut',
+        shortcutTitle: 'Custom shortcut for quick insert',
+        shortcutHint: 'Click the box, then press the chord you want. It must include ⌘ / Ctrl or ⌥ / Alt.',
+        shortcutRecording: 'Press a chord…',
+        shortcutNeedMod: 'Include ⌘ / Ctrl or ⌥ / Alt',
+        shortcutSaved: 'Shortcut updated',
+        shortcutReset: 'Back to the default shortcut',
+        shortcutConflict: (label) => `DSH already uses ${label} — the host may catch it first.`,
+        shortcutDefault: 'Use default',
+        shortcutNote: 'Only affects quick insert. The default is ⌘⇧K.',
+        changeShortcut: 'Change shortcut',
         toFavorites: 'Move to vault',
         draftMoved: (n) => `Moved ${n} draft(s) to the vault`,
         moved: (n) => `Moved ${n} item(s)`,
@@ -250,6 +270,17 @@ window.__ModuleLoader__.load({
         purgeOne: '彻底删除这一条？此操作不可撤销。',
         purgeMany: (n) => `彻底删除选中的 ${n} 条？此操作不可撤销。`,
         deletedOn: (stamp) => `${stamp} 删除`,
+        shortcut: '快捷键',
+        shortcutTitle: '自定义快速插入快捷键',
+        shortcutHint: '点下面的框，然后按下你想用的组合键。必须带 ⌘ / Ctrl 或 ⌥ / Alt。',
+        shortcutRecording: '按下组合键…',
+        shortcutNeedMod: '要带 ⌘ / Ctrl 或 ⌥ / Alt',
+        shortcutSaved: '快捷键已更新',
+        shortcutReset: '已恢复默认快捷键',
+        shortcutConflict: (label) => `DSH 自带快捷键占用了 ${label}，可能会被宿主先接住。`,
+        shortcutDefault: '恢复默认',
+        shortcutNote: '只影响快速插入。默认是 ⌘⇧K。',
+        changeShortcut: '改快捷键',
         toFavorites: '移入收藏夹',
         draftMoved: (n) => `已把 ${n} 条草稿移入收藏夹`,
         moved: (n) => `已移动 ${n} 条`,
@@ -910,13 +941,106 @@ window.__ModuleLoader__.load({
       quickEmit()
     }
 
-    // Same chord on both platforms, written the way that platform writes it.
-    function shortcutLabel() {
+    // ---------------------------------------------------------------- shortcut
+
+    const isMac = () => {
       try {
-        return /mac/i.test(navigator.userAgent || '') ? '⌘⇧K' : 'Ctrl+Shift+K'
+        return /mac/i.test(navigator.userAgent || '')
       } catch {
-        return '⌘⇧K'
+        return false
       }
+    }
+
+    // `mod` means ⌘ on macOS and Ctrl elsewhere, so one saved chord works on both platforms.
+    function normalizeCombo(raw) {
+      if (!raw || typeof raw !== 'object') return null
+      const key = typeof raw.key === 'string' ? raw.key.toLowerCase().slice(0, 12) : ''
+      if (!key) return null
+      const combo = { mod: Boolean(raw.mod), shift: Boolean(raw.shift), alt: Boolean(raw.alt), key }
+      return combo.mod || combo.alt ? combo : null
+    }
+
+    function readCombo() {
+      try {
+        const raw = window.localStorage.getItem(SHORTCUT_KEY)
+        if (!raw) return DEFAULT_COMBO
+        const parsed = normalizeCombo(JSON.parse(raw))
+        return parsed || DEFAULT_COMBO
+      } catch {
+        return DEFAULT_COMBO
+      }
+    }
+
+    function writeCombo(combo) {
+      const next = normalizeCombo(combo) || DEFAULT_COMBO
+      try {
+        window.localStorage.setItem(SHORTCUT_KEY, JSON.stringify(next))
+      } catch {
+        return false
+      }
+      emit()
+      return true
+    }
+
+    function comboLabel(combo) {
+      const parts = []
+      if (combo.mod) parts.push(isMac() ? '⌘' : 'Ctrl')
+      if (combo.alt) parts.push(isMac() ? '⌥' : 'Alt')
+      if (combo.shift) parts.push(isMac() ? '⇧' : 'Shift')
+      parts.push(combo.key.length === 1 ? combo.key.toUpperCase() : combo.key)
+      return parts.join(isMac() ? '' : '+')
+    }
+
+    function shortcutLabel() {
+      return comboLabel(readCombo())
+    }
+
+    // Modifier-only presses are not a chord; letters, digits, function keys and named keys are.
+    function eventToCombo(event) {
+      const key = String(event.key || '')
+      if (!key) return null
+      if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Dead', 'Process', 'Unidentified'].includes(key)) return null
+      const combo = {
+        mod: Boolean(event.metaKey || event.ctrlKey),
+        shift: Boolean(event.shiftKey),
+        alt: Boolean(event.altKey),
+        key: key.toLowerCase().slice(0, 12),
+      }
+      return combo.mod || combo.alt ? combo : null
+    }
+
+    function matchesCombo(combo, event) {
+      if (!combo || !event) return false
+      if (event.isComposing) return false
+      const mod = Boolean(event.metaKey || event.ctrlKey)
+      if (Boolean(event.shiftKey) !== combo.shift) return false
+      if (Boolean(event.altKey) !== combo.alt) return false
+      if (mod !== combo.mod) return false
+      return String(event.key || '').toLowerCase() === combo.key
+    }
+
+    // Same chord string spelling as KNOWN_COMBOS so the conflict check is a plain includes().
+    function comboConflictLabel(combo) {
+      if (!combo) return ''
+      const parts = []
+      if (combo.alt) parts.push('Alt')
+      if (combo.mod) parts.push('Mod')
+      if (combo.shift) parts.push('Shift')
+      const key = combo.key.length === 1 ? combo.key.toUpperCase() : combo.key
+      parts.push(key)
+      return parts.join('+')
+    }
+
+    // "Mod+Shift+K" -> the platform's own spelling, for the conflict warning.
+    function prettyKnown(label) {
+      const tokens = String(label).split('+')
+      const combo = { mod: false, alt: false, shift: false, key: tokens[tokens.length - 1] }
+      for (const token of tokens.slice(0, -1)) {
+        if (token === 'Mod') combo.mod = true
+        else if (token === 'Alt') combo.alt = true
+        else if (token === 'Shift') combo.shift = true
+      }
+      return comboLabel(combo)
     }
 
     // --------------------------------------------------------------- clipboard
@@ -2346,7 +2470,12 @@ window.__ModuleLoader__.load({
         h('p', { style: styles.helpText }, dict.step3),
         h('p', { style: styles.helpText }, `${dict.step4} (${shortcutLabel()})`),
         h('p', { style: styles.helpNote }, dict.localOnly),
-        h('div', { style: { display: 'flex', gap: 6 } }, button(dict.openChat, props.onOpenChat, { primary: true })),
+        h(
+          'div',
+          { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          button(dict.openChat, props.onOpenChat, { primary: true }),
+          props.onShortcut ? button(`${dict.changeShortcut} (${shortcutLabel()})`, props.onShortcut) : null,
+        ),
       )
     }
 
@@ -2354,6 +2483,8 @@ window.__ModuleLoader__.load({
       const dict = t()
       const [items, setItems] = React.useState(() => readAll().slice())
       const [trash, setTrash] = React.useState(() => readTrash().slice())
+      const [shortDraft, setShortDraft] = React.useState(null)
+      const [shortError, setShortError] = React.useState('')
       const [folders, setFolders] = React.useState(() => readState().folders.slice())
       const [tab, setTab] = React.useState('favorites')
       const [current, setCurrent] = React.useState('all')
@@ -2551,6 +2682,28 @@ window.__ModuleLoader__.load({
         announce(ok ? dict.purged : dict.storeFailed, !ok)
       }
 
+      const openShortcut = () => {
+        setShortError('')
+        setShortDraft(readCombo())
+        setDialog({ kind: 'shortcut' })
+      }
+
+      const saveShortcut = () => {
+        if (!shortDraft) {
+          setShortError(dict.shortcutNeedMod)
+          return
+        }
+        const ok = writeCombo(shortDraft)
+        setDialog(null)
+        announce(ok ? dict.shortcutSaved : dict.storeFailed, !ok)
+      }
+
+      const resetShortcut = () => {
+        writeCombo(DEFAULT_COMBO)
+        setDialog(null)
+        announce(dict.shortcutReset, false)
+      }
+
       const openMerge = () => {
         if (selectedItems.length < 2) return announce(dict.selectedEmpty, true)
         setDialogError('')
@@ -2741,6 +2894,7 @@ window.__ModuleLoader__.load({
           'div',
           { style: styles.headRight },
           button(`${dict.quick} ${shortcutLabel()}`, () => toggleQuick(true), { title: dict.quick }),
+          button(dict.shortcut, openShortcut, { title: dict.shortcutTitle }),
           h(
             'span',
             {
@@ -3066,6 +3220,49 @@ window.__ModuleLoader__.load({
           },
           h('p', { style: styles.dialogText }, count > 1 ? dict.confirmDeleteMany(count) : dict.confirmDeleteOne),
         )
+      } else if (dialog && dialog.kind === 'shortcut') {
+        const conflict = shortDraft ? comboConflictLabel(shortDraft) : ''
+        const clash = conflict && KNOWN_COMBOS.includes(conflict) ? prettyKnown(conflict) : ''
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.shortcutTitle,
+            confirmLabel: dict.saveChanges,
+            disabled: !shortDraft,
+            onCancel: () => setDialog(null),
+            onConfirm: saveShortcut,
+          },
+          h('p', { style: styles.dialogText }, dict.shortcutHint),
+          h('input', {
+            autoFocus: true,
+            readOnly: true,
+            value: shortDraft ? comboLabel(shortDraft) : dict.shortcutRecording,
+            'aria-label': dict.shortcutTitle,
+            onKeyDown: (event) => {
+              if (event.key === 'Tab') return
+              event.preventDefault()
+              event.stopPropagation()
+              const combo = eventToCombo(event)
+              if (!combo) {
+                setShortError(dict.shortcutNeedMod)
+                return
+              }
+              setShortError('')
+              setShortDraft(combo)
+            },
+            style: { ...styles.input, textAlign: 'center', fontWeight: 600, cursor: 'pointer' },
+          }),
+          h('p', { style: styles.helpNote }, dict.shortcutNote),
+          clash
+            ? h('p', { style: { ...styles.helpNote, color: 'var(--dsw-alias-state-warn-primary)' } }, dict.shortcutConflict(clash))
+            : null,
+          shortError ? h('p', { style: styles.dialogError }, shortError) : null,
+          h(
+            'div',
+            { style: { display: 'flex', justifyContent: 'flex-end' } },
+            button(dict.shortcutDefault, resetShortcut),
+          ),
+        )
       } else if (dialog && dialog.kind === 'purge') {
         const count = dialog.ids.length
         dialogNode = h(
@@ -3297,10 +3494,10 @@ window.__ModuleLoader__.load({
           { style: styles.scroll },
           tab === 'favorites' ? favoritesBody : tab === 'drafts' ? draftsBody : trashBody,
           helpOpen && tab === 'favorites' && snippets.length === 0
-            ? h(HelpBlock, { onOpenChat: openChat, showTitle: true })
+            ? h(HelpBlock, { onOpenChat: openChat, onShortcut: openShortcut, showTitle: true })
             : null,
           helpOpen && tab === 'favorites' && snippets.length > 0
-            ? h(HelpBlock, { onOpenChat: openChat, showTitle: false })
+            ? h(HelpBlock, { onOpenChat: openChat, onShortcut: openShortcut, showTitle: false })
             : null,
         ),
         dialogNode,
@@ -3746,9 +3943,8 @@ window.__ModuleLoader__.load({
         // The shortcut is global on purpose: the picker must be one keystroke from anywhere.
         ctx.effect(() => {
           const onKey = (event) => {
-            if (!event || event.isComposing || event.altKey) return
-            const key = String(event.key || '').toLowerCase()
-            if (key !== 'k' || !event.shiftKey || !(event.metaKey || event.ctrlKey)) return
+            if (!event || event.isComposing) return
+            if (!matchesCombo(readCombo(), event)) return
             event.preventDefault()
             toggleQuick()
           }
