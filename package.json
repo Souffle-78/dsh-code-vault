@@ -1,9 +1,9 @@
 {
   "name": "dsh-code-vault",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "代码收藏夹：把对话里的代码块收进本地收藏夹，在侧栏面板里搜索、打标签、多选批量整理，把几块合并成新的一条，或一键插回输入框。 Code Vault — save chat code blocks into a local vault with its own sidebar panel for search, tags, multi-select batch actions and merging.",
+  "description": "代码收藏夹：把对话里的代码块收进本地收藏夹，在侧栏面板里搜索、打标签、多选批量整理，把几块合并成新的一条，按 ⌘⇧K 快速插入，或一键插回输入框。 Code Vault — save chat code blocks into a local vault with its own sidebar panel for search, tags, multi-select batch actions and merging, plus ⌘⇧K quick insert.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Souffle-78/dsh-code-vault.git"

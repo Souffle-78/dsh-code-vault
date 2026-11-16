@@ -13,12 +13,15 @@ Keep the code that shows up in a conversation — a shell command, a config file
 3. Open the bookmark icon in the left sidebar. The panel lists everything saved: search by code, language or tag, add tags, copy, delete, export/import JSON, or **Insert** to put the block back into the composer and keep editing.
 4. Click **Select** in the toolbar to batch copy, batch tag or batch delete selected blocks (deleting asks for confirmation first).
 5. With two or more selected, **Merge into new entry** combines them into one new markdown entry in list order — edit the title, check the preview, then confirm.
+6. Press **⌘⇧K** (`Ctrl+Shift+K` on Windows and Linux) anywhere to open the quick-insert overlay: type to search, ↑↓ to choose, Enter to insert, Esc to close.
+7. While a draft is half-written, **Save draft** under the composer stores it as a `text` snippet (saving the same draft twice does not duplicate it).
 
 ## Notes
 
 - Storage is per browser profile (`localStorage`), capped at 400 entries; one entry holds up to 200 000 characters.
 - Saving the same code twice does not create a duplicate; an already saved block keeps showing **Saved ✓** long after the reply, including after a reload.
 - The panel can switch between 中文 and English independently of the DSH UI language.
+- Drafts are stored with the `text` language and behave like any other entry: searchable, copyable, insertable.
 - A merged entry is stored as markdown, with each block keeping its own language fence.
 - If a merge would exceed 200 000 characters the confirm button is disabled, so storage never gets corrupted.
 

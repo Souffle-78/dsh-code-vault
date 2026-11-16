@@ -78,6 +78,17 @@ window.__ModuleLoader__.load({
         removed: 'Deleted',
         tagPrompt: 'Tag name, then Enter',
         confirmNote: 'This step needs one more click.',
+        step4: 'In a hurry: the button below the composer saves the half-written draft as a snippet, and the quick-insert shortcut reaches the vault without leaving the chat.',
+        saveDraft: 'Save draft',
+        draftSaved: 'Draft saved to the vault',
+        draftDup: 'That draft is already in the vault',
+        quick: 'Quick insert',
+        quickPlaceholder: 'Search saved snippets — Enter inserts',
+        quickEmpty: 'No snippet matches this search.',
+        quickNoAssets: 'The vault is empty — save a code block in a conversation first.',
+        quickHint: '↑↓ choose · Enter insert · Esc close',
+        quickCount: (n) => `${n} saved`,
+        quickClose: 'Close',
       },
       zh: {
         title: '代码收藏夹',
@@ -143,6 +154,17 @@ window.__ModuleLoader__.load({
         removed: '已删除',
         tagPrompt: '标签名，回车确认',
         confirmNote: '这一步需要再点一次确认。',
+        step4: '赶时间的时候：输入框下方有「存草稿」，不用离开对话就能用快捷键唤起收藏夹。',
+        saveDraft: '存草稿',
+        draftSaved: '草稿已存进收藏夹',
+        draftDup: '这段草稿已经在收藏夹里了',
+        quick: '快速插入',
+        quickPlaceholder: '搜索收藏的片段 · 回车插入',
+        quickEmpty: '没有匹配的片段。',
+        quickNoAssets: '收藏夹还是空的——先去对话里收藏一个代码块。',
+        quickHint: '↑↓ 选择 · 回车插入 · Esc 关闭',
+        quickCount: (n) => `共 ${n} 条`,
+        quickClose: '关闭',
       },
     }
 
@@ -421,6 +443,50 @@ window.__ModuleLoader__.load({
       }
     }
 
+    // ------------------------------------------------------------ quick picker
+
+    // The picker lives in the frame-wide overlay so it works on every surface, but its open
+    // state is module-level: a shortcut handler outside React flips it and every mounted copy
+    // (there is exactly one) re-reads it.
+    let quickOpen = false
+    let quickQuery = ''
+    const quickListeners = new Set()
+
+    function quickEmit() {
+      for (const fn of Array.from(quickListeners)) {
+        try {
+          fn()
+        } catch {}
+      }
+    }
+
+    function subscribeQuick(fn) {
+      quickListeners.add(fn)
+      return () => quickListeners.delete(fn)
+    }
+
+    function setQuickQuery(next) {
+      quickQuery = next
+      quickEmit()
+    }
+
+    function toggleQuick(force) {
+      const next = typeof force === 'boolean' ? force : !quickOpen
+      if (next === quickOpen) return
+      quickOpen = next
+      quickQuery = ''
+      quickEmit()
+    }
+
+    // Same chord on both platforms, written the way that platform writes it.
+    function shortcutLabel() {
+      try {
+        return /mac/i.test(navigator.userAgent || '') ? '⌘⇧K' : 'Ctrl+Shift+K'
+      } catch {
+        return '⌘⇧K'
+      }
+    }
+
     // --------------------------------------------------------------- clipboard
 
     function copyText(text, done) {
@@ -627,6 +693,107 @@ window.__ModuleLoader__.load({
       helpText: { margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--dsw-alias-label-secondary)' },
       notice: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-state-success-primary)' },
       helpNote: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-tertiary)' },
+      // Composer dock: only the button opts back into pointer events.
+      dockBar: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 8,
+        padding: '2px 2px 0',
+        fontSize: 12,
+        lineHeight: '18px',
+        color: 'var(--dsw-alias-label-tertiary)',
+        pointerEvents: 'auto',
+      },
+      dockNote: { color: 'var(--dsw-alias-state-success-primary)' },
+      dockButton: {
+        height: 22,
+        padding: '0 8px',
+        fontSize: 12,
+        lineHeight: '20px',
+        color: 'var(--dsw-alias-label-secondary)',
+        background: 'transparent',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        borderRadius: 6,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      },
+      // Frame-wide quick picker.
+      quickBackdrop: {
+        position: 'fixed',
+        inset: 0,
+        zIndex: 40,
+        background: 'rgba(0,0,0,0.28)',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        padding: '12vh 16px 16px',
+        boxSizing: 'border-box',
+        pointerEvents: 'auto',
+      },
+      quickCard: {
+        width: '100%',
+        maxWidth: 560,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        padding: 10,
+        background: 'var(--dsw-alias-bg-layer-1)',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        borderRadius: 12,
+        boxShadow: '0 18px 44px rgba(0,0,0,0.28)',
+        boxSizing: 'border-box',
+      },
+      quickInput: {
+        height: 34,
+        padding: '0 10px',
+        fontSize: 13,
+        color: 'var(--dsw-alias-label-primary)',
+        background: 'var(--dsw-alias-bg-base)',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        borderRadius: 8,
+        outline: 'none',
+      },
+      quickList: { display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '46vh', overflowY: 'auto' },
+      quickRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        width: '100%',
+        padding: '7px 9px',
+        textAlign: 'left',
+        color: 'var(--dsw-alias-label-primary)',
+        background: 'transparent',
+        border: '1px solid transparent',
+        borderRadius: 7,
+        cursor: 'pointer',
+        fontSize: 13,
+        lineHeight: '18px',
+      },
+      quickRowActive: {
+        background: 'var(--dsw-alias-interactive-bg-hover)',
+        borderColor: 'var(--dsw-alias-brand-primary)',
+      },
+      quickTitle: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      quickLang: { fontSize: 11, color: 'var(--dsw-alias-label-tertiary)', whiteSpace: 'nowrap' },
+      quickEmpty: {
+        padding: '14px 10px',
+        fontSize: 12,
+        lineHeight: '18px',
+        color: 'var(--dsw-alias-label-tertiary)',
+        textAlign: 'center',
+      },
+      quickFoot: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '0 4px 2px',
+        fontSize: 11,
+        lineHeight: '16px',
+        color: 'var(--dsw-alias-label-tertiary)',
+      },
+      quickNote: { color: 'var(--dsw-alias-state-error-primary)' },
+      quickCount: { marginLeft: 'auto' },
     }
 
     function button(label, onClick, options) {
@@ -945,6 +1112,7 @@ window.__ModuleLoader__.load({
         h('p', { style: styles.helpText }, dict.step1),
         h('p', { style: styles.helpText }, dict.step2),
         h('p', { style: styles.helpText }, dict.step3),
+        h('p', { style: styles.helpText }, `${dict.step4} (${shortcutLabel()})`),
         h('p', { style: styles.helpNote }, dict.localOnly),
         h('div', { style: { display: 'flex', gap: 6 } }, button(dict.openChat, props.onOpenChat, { primary: true })),
       )
@@ -1122,6 +1290,7 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { style: styles.headRight },
+          button(`${dict.quick} ${shortcutLabel()}`, () => toggleQuick(true), { title: dict.quick }),
           h(
             'span',
             {
@@ -1457,12 +1626,17 @@ window.__ModuleLoader__.load({
 
     // ------------------------------------------------ composer insert consumer
 
-    function InsertBridge(props) {
+    // Two jobs on the same dock row: drain the insert queue that every surface feeds, and give
+    // a half-written draft a one-click way into the vault before it is lost.
+    function ComposerBridge(props) {
       const [, bump] = React.useState(0)
+      const [flash, setFlash] = React.useState('')
+      const flashTimer = React.useRef(0)
       const useInput = typeof props.useInput === 'function' ? props.useInput : null
       const draft = useInput ? useInput((state) => state.draft) : ''
 
       React.useEffect(() => subscribeInsert(() => bump((v) => v + 1)), [])
+      React.useEffect(() => () => window.clearTimeout(flashTimer.current), [])
 
       React.useEffect(() => {
         if (!pending.length) return
@@ -1491,7 +1665,180 @@ window.__ModuleLoader__.load({
         }
       })
 
-      return h('span', { style: { display: 'none' } })
+      const report = (text) => {
+        setFlash(text)
+        window.clearTimeout(flashTimer.current)
+        flashTimer.current = window.setTimeout(() => setFlash(''), 2000)
+      }
+
+      const text = typeof draft === 'string' ? draft : ''
+      const canSave = text.trim() !== ''
+
+      // Drafts are stored as plain text: they are prose or a partial edit, not a code fence.
+      // Surrounding whitespace is dropped so re-saving the same draft dedupes instead of
+      // producing a twin entry.
+      const saveDraft = () => {
+        const trimmed = text.trim()
+        const code = trimmed.length > MAX_CODE ? trimmed.slice(0, MAX_CODE) : trimmed
+        const before = readAll().length
+        if (!addAsset({ title: titleOf(code), lang: 'text', code })) {
+          report(t().saveFailed)
+          return
+        }
+        report(readAll().length > before ? t().draftSaved : t().draftDup)
+      }
+
+      if (!canSave && !flash) return h('span', { style: { display: 'none' } })
+
+      return h(
+        'div',
+        { style: styles.dockBar },
+        flash ? h('span', { style: styles.dockNote }, flash) : null,
+        canSave
+          ? h(
+              'button',
+              { type: 'button', style: styles.dockButton, title: t().saveDraft, onClick: saveDraft },
+              t().saveDraft,
+            )
+          : null,
+      )
+    }
+
+    // -------------------------------------------------------------- quick picker
+
+    // Registered in `shell.overlay`: the frame-wide layer is click-through, so this component
+    // renders nothing until the shortcut (or the panel button) opens it.
+    function QuickPicker() {
+      const dict = t()
+      const [, bump] = React.useState(0)
+      const [cursor, setCursor] = React.useState(0)
+      const [note, setNote] = React.useState('')
+      const inputRef = React.useRef(null)
+      const noteTimer = React.useRef(0)
+
+      React.useEffect(() => subscribeQuick(() => bump((v) => v + 1)), [])
+      React.useEffect(() => subscribe(() => bump((v) => v + 1)), [])
+      React.useEffect(() => () => window.clearTimeout(noteTimer.current), [])
+      React.useEffect(() => {
+        if (!quickOpen || !inputRef.current) return
+        try {
+          inputRef.current.focus()
+        } catch {}
+      }, [quickOpen])
+
+      // Esc must work even after focus moved to a row (or the backdrop) by a click.
+      React.useEffect(() => {
+        if (!quickOpen) return
+        const onDocKey = (event) => {
+          if (event.key !== 'Escape') return
+          event.preventDefault()
+          toggleQuick(false)
+        }
+        document.addEventListener('keydown', onDocKey)
+        return () => document.removeEventListener('keydown', onDocKey)
+      }, [quickOpen])
+
+      if (!quickOpen) return null
+
+      const all = readAll()
+      const needle = quickQuery.trim().toLowerCase()
+      const hits = (needle ? all.filter((item) => searchTextOf(item).includes(needle)) : all).slice(0, 8)
+      const active = hits.length ? Math.min(cursor, hits.length - 1) : 0
+
+      const close = () => toggleQuick(false)
+      const flash = (text) => {
+        setNote(text)
+        window.clearTimeout(noteTimer.current)
+        noteTimer.current = window.setTimeout(() => setNote(''), 2200)
+      }
+
+      // Stays open until the composer answers: with no conversation mounted the queue times out
+      // and the hint says why nothing landed instead of closing on a silent failure.
+      const insert = (item) => {
+        if (!item) return
+        requestInsert(item.code, (ok) => {
+          if (ok) close()
+          else flash(dict.noSession)
+        })
+      }
+
+      const onKeyDown = (event) => {
+        const key = event.key || ''
+        // An Enter that confirms an IME candidate must not insert a snippet instead.
+        if (event.isComposing && key !== 'Escape') return
+        if (key === 'Escape') {
+          event.preventDefault()
+          close()
+          return
+        }
+        if (key === 'ArrowDown') {
+          event.preventDefault()
+          setCursor((value) => Math.min(value + 1, Math.max(hits.length - 1, 0)))
+          return
+        }
+        if (key === 'ArrowUp') {
+          event.preventDefault()
+          setCursor((value) => Math.max(value - 1, 0))
+          return
+        }
+        if (key === 'Enter') {
+          event.preventDefault()
+          insert(hits[active])
+        }
+      }
+
+      return h(
+        'div',
+        {
+          style: styles.quickBackdrop,
+          onMouseDown: (event) => {
+            if (event.target === event.currentTarget) close()
+          },
+        },
+        h(
+          'div',
+          { style: styles.quickCard, role: 'dialog', 'aria-modal': 'true', 'aria-label': dict.quick },
+          h('input', {
+            ref: inputRef,
+            value: quickQuery,
+            placeholder: dict.quickPlaceholder,
+            'aria-label': dict.quickPlaceholder,
+            onChange: (event) => {
+              setQuickQuery(event.target.value)
+              setCursor(0)
+            },
+            onKeyDown,
+            style: styles.quickInput,
+          }),
+          hits.length
+            ? h(
+                'div',
+                { style: styles.quickList },
+                hits.map((item, index) =>
+                  h(
+                    'button',
+                    {
+                      key: item.id,
+                      type: 'button',
+                      style: index === active ? { ...styles.quickRow, ...styles.quickRowActive } : styles.quickRow,
+                      onMouseEnter: () => setCursor(index),
+                      onClick: () => insert(item),
+                    },
+                    h('span', { style: styles.quickTitle }, item.title),
+                    h('span', { style: styles.quickLang }, item.lang || '—'),
+                  ),
+                ),
+              )
+            : h('div', { style: styles.quickEmpty }, all.length ? dict.quickEmpty : dict.quickNoAssets),
+          h(
+            'div',
+            { style: styles.quickFoot },
+            note ? h('span', { style: styles.quickNote }, note) : null,
+            h('span', null, dict.quickHint),
+            h('span', { style: styles.quickCount }, dict.quickCount(all.length)),
+          ),
+        ),
+      )
     }
 
     // ------------------------------------------------------------------- icon
@@ -1580,9 +1927,25 @@ window.__ModuleLoader__.load({
           SidebarIcon,
         )
         register('conversation.chat.markdown.fence', { name: 'conversation.chat.markdown.fence', id: PANEL_ID, order: 20 }, FenceLayer)
-        register('conversation.composer.dock', { name: 'conversation.composer.dock', id: PANEL_ID, order: 40 }, InsertBridge)
+        register('conversation.composer.dock', { name: 'conversation.composer.dock', id: PANEL_ID, order: 40 }, ComposerBridge)
+        // A fresh id sits beside the shipped overlay entries instead of replacing any of them.
+        register('shell.overlay', { name: 'shell.overlay', id: `${PANEL_ID}.quick`, order: 50 }, QuickPicker)
+
+        // The shortcut is global on purpose: the picker must be one keystroke from anywhere.
+        ctx.effect(() => {
+          const onKey = (event) => {
+            if (!event || event.isComposing || event.altKey) return
+            const key = String(event.key || '').toLowerCase()
+            if (key !== 'k' || !event.shiftKey || !(event.metaKey || event.ctrlKey)) return
+            event.preventDefault()
+            toggleQuick()
+          }
+          window.addEventListener('keydown', onKey)
+          return () => window.removeEventListener('keydown', onKey)
+        })
 
         const disposePanel = () => {
+          toggleQuick(false)
           try {
             const panelLayout = layout || (typeof ctx.get === 'function' ? ctx.get('layout') : null)
             if (panelLayout && panelLayout.panelInfo && panelLayout.panelInfo.getSnapshot().activePanelId === PANEL_ID) {
