@@ -1,9 +1,9 @@
 {
   "name": "dsh-code-vault",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
-  "description": "Collect code blocks from a conversation into a local vault with folders and a separate drafts box, all in a DSH sidebar panel: search, tags, batch actions, merge, and one-key insert. 把对话代码收进本地收藏夹与草稿箱、按文件夹分级管理，并一键插回输入框。",
+  "description": "Collect code blocks from a DSH conversation into a local vault with drafts, nested folders, a code editor with lightweight checks, and one-keystroke insert back into the composer. 把对话里的代码收进本地收藏夹：草稿箱、文件夹分级、带检查的编辑器，一键插回输入框。",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Souffle-78/dsh-code-vault.git"

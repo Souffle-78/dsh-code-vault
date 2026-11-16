@@ -123,6 +123,15 @@ window.__ModuleLoader__.load({
         editCodeLabel: 'Code',
         saveChanges: 'Save',
         editSaved: 'Changes saved',
+        unsaved: 'Unsaved',
+        lintOk: 'No problems found.',
+        lintBrackets: (line) => `Unclosed or mismatched bracket on line ${line}.`,
+        lintJson: (message) => `Invalid JSON: ${message}`,
+        lintJs: (message) => `JavaScript syntax error: ${message}`,
+        lintTrailing: (count) => `${count} line(s) end with whitespace.`,
+        lintTitleEmpty: 'Title is empty — saving will generate one.',
+        editorHelp: '⌘S save · Tab indent · brackets close themselves',
+        jumpHint: 'Click a line to jump',
         editFailed: 'Could not save — browser storage may be full',
         more: 'More',
         less: 'Less',
@@ -238,6 +247,15 @@ window.__ModuleLoader__.load({
         editCodeLabel: '代码',
         saveChanges: '保存',
         editSaved: '修改已保存',
+        unsaved: '未保存',
+        lintOk: '没有发现问题。',
+        lintBrackets: (line) => `第 ${line} 行的括号没有配对。`,
+        lintJson: (message) => `JSON 无效：${message}`,
+        lintJs: (message) => `JS 语法错误：${message}`,
+        lintTrailing: (count) => `有 ${count} 行以空格结尾。`,
+        lintTitleEmpty: '标题是空的，保存时会自动生成。',
+        editorHelp: '⌘S 保存 · Tab 缩进 · 括号自动配对',
+        jumpHint: '点一行可以跳过去',
         editFailed: '保存失败，浏览器存储可能已满',
         more: '更多',
         less: '收起',
@@ -1241,6 +1259,248 @@ window.__ModuleLoader__.load({
     }
 
     /** Modal confirmation: Escape, backdrop click, and a first-focus all handled here. */
+    // ---------------------------------------------------------------- code editor
+
+    const EDIT_INDENT = '  '
+    const EDIT_PAIRS = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' }
+    const EDIT_CLOSERS = new Set([')', ']', '}', '"', "'", '`'])
+    const EDIT_OPEN_END = /[{\[(:]\s*$/
+
+    const lineStartAt = (text, pos) => text.lastIndexOf('\n', Math.max(0, pos - 1)) + 1
+    const indentAt = (text, pos) => {
+      const from = lineStartAt(text, pos)
+      const match = /^[ \t]*/.exec(text.slice(from, pos))
+      return match ? match[0] : ''
+    }
+    const lineNumberAt = (text, pos) => text.slice(0, Math.max(0, pos)).split('\n').length
+
+    // Cheap syntax feedback: bracket pairing plus a real parse for JSON and plain JS.
+    // Nothing here runs the snippet — `new Function` only compiles it.
+    const lintCode = (code, lang, titleEmpty, dict) => {
+      const issues = []
+      const lower = String(lang || '').toLowerCase()
+
+      const stack = []
+      let quote = ''
+      for (let i = 0; i < code.length; i += 1) {
+        const ch = code[i]
+        if (quote) {
+          if (ch === '\\') i += 1
+          else if (ch === quote) quote = ''
+          continue
+        }
+        if (ch === '"' || ch === "'" || ch === '`') {
+          quote = ch
+          continue
+        }
+        if (ch === '(' || ch === '[' || ch === '{') {
+          stack.push({ ch, at: i })
+          continue
+        }
+        if (ch === ')' || ch === ']' || ch === '}') {
+          const open = stack.pop()
+          if (!open || EDIT_PAIRS[open.ch] !== ch) {
+            issues.push({ level: 'error', line: lineNumberAt(code, i), text: dict.lintBrackets(lineNumberAt(code, i)) })
+            stack.length = 0
+            break
+          }
+        }
+      }
+      if (stack.length && !issues.length) {
+        const at = stack[stack.length - 1].at
+        issues.push({ level: 'error', line: lineNumberAt(code, at), text: dict.lintBrackets(lineNumberAt(code, at)) })
+      }
+
+      if (/^(json|jsonc|json5)$/.test(lower)) {
+        try {
+          JSON.parse(code)
+        } catch (error) {
+          issues.push({ level: 'error', line: 1, text: dict.lintJson(String((error && error.message) || error)) })
+        }
+      } else if (/^(js|javascript|mjs|cjs|node)$/.test(lower)) {
+        try {
+          // eslint-disable-next-line no-new-func
+          new Function(code)
+        } catch (error) {
+          issues.push({ level: 'error', line: 1, text: dict.lintJs(String((error && error.message) || error)) })
+        }
+      }
+
+      const trailing = code.split('\n').filter((line) => /[ \t]+$/.test(line)).length
+      if (trailing) issues.push({ level: 'warn', line: 0, text: dict.lintTrailing(trailing) })
+      if (titleEmpty) issues.push({ level: 'info', line: 0, text: dict.lintTitleEmpty })
+
+      return issues.slice(0, 4)
+    }
+
+    function CodeEditor(props) {
+      const dict = t()
+      const value = typeof props.value === 'string' ? props.value : ''
+      const textRef = React.useRef(null)
+      const gutterRef = React.useRef(null)
+      const caretRef = React.useRef(null)
+      const lines = value.split('\n')
+      const issues = lintCode(value, props.lang, Boolean(props.titleEmpty), dict)
+
+      // A controlled textarea loses the caret on every edit, so the position is
+      // stashed and re-applied after React commits the new value.
+      React.useEffect(() => {
+        const spot = caretRef.current
+        const node = textRef.current
+        caretRef.current = null
+        if (!spot || !node || typeof node.setSelectionRange !== 'function') return
+        try {
+          node.focus({ preventScroll: true })
+          node.setSelectionRange(spot.start, spot.end)
+        } catch {}
+      })
+
+      const commit = (next, start, end) => {
+        caretRef.current = { start, end: end === undefined ? start : end }
+        props.onChange(next)
+      }
+
+      const onKeyDown = (event) => {
+        const node = event.currentTarget || {}
+        const text = typeof node.value === 'string' ? node.value : value
+        const start = typeof node.selectionStart === 'number' ? node.selectionStart : text.length
+        const end = typeof node.selectionEnd === 'number' ? node.selectionEnd : start
+        const key = event.key
+        const mod = event.metaKey || event.ctrlKey
+
+        if (mod && (key === 's' || key === 'S')) {
+          event.preventDefault()
+          props.onSave()
+          return
+        }
+
+        if (key === 'Tab') {
+          event.preventDefault()
+          if (event.shiftKey) {
+            const from = lineStartAt(text, start)
+            const width = /^ {1,2}/.exec(text.slice(from)) ? /^ {1,2}/.exec(text.slice(from))[0].length : 0
+            if (!width) return
+            commit(text.slice(0, from) + text.slice(from + width), Math.max(from, start - width))
+            return
+          }
+          commit(text.slice(0, start) + EDIT_INDENT + text.slice(end), start + EDIT_INDENT.length)
+          return
+        }
+
+        if (key === 'Enter') {
+          event.preventDefault()
+          const base = indentAt(text, start)
+          const currentLine = text.slice(lineStartAt(text, start), start)
+          const opens = EDIT_OPEN_END.test(currentLine)
+          const closesNext = /^\s*[)\]}]/.test(text.slice(end))
+          const extra = opens ? EDIT_INDENT : ''
+          if (opens && closesNext) {
+            const insertion = `\n${base}${EDIT_INDENT}\n${base}`
+            commit(text.slice(0, start) + insertion + text.slice(end), start + 1 + base.length + EDIT_INDENT.length)
+            return
+          }
+          const insertion = `\n${base}${extra}`
+          commit(text.slice(0, start) + insertion + text.slice(end), start + insertion.length)
+          return
+        }
+
+        if (key === 'Backspace' && start === end && start > 0) {
+          const before = text[start - 1]
+          const after = text[start]
+          if (EDIT_PAIRS[before] && EDIT_PAIRS[before] === after) {
+            event.preventDefault()
+            commit(text.slice(0, start - 1) + text.slice(start + 1), start - 1)
+          }
+          return
+        }
+
+        if (key.length === 1 && start === end) {
+          const pair = EDIT_PAIRS[key]
+          if (pair) {
+            event.preventDefault()
+            commit(text.slice(0, start) + key + pair + text.slice(end), start + 1)
+            return
+          }
+          if (EDIT_CLOSERS.has(key) && text[start] === key) {
+            event.preventDefault()
+            commit(text, start + 1)
+          }
+        }
+      }
+
+      const jumpTo = (line) => {
+        if (!line) return
+        const wanted = Math.max(0, line - 1)
+        let pos = 0
+        for (let i = 0; i < wanted; i += 1) {
+          const next = value.indexOf('\n', pos)
+          if (next < 0) break
+          pos = next + 1
+        }
+        caretRef.current = { start: pos, end: pos }
+        setCaretPing((prev) => prev + 1)
+      }
+      const [, setCaretPing] = React.useState(0)
+      const onScroll = (event) => {
+        const gutter = gutterRef.current
+        if (gutter && event.currentTarget) gutter.scrollTop = event.currentTarget.scrollTop
+      }
+
+      return h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        h(
+          'div',
+          { style: styles.editorRow },
+          h(
+            'div',
+            { ref: gutterRef, style: styles.gutter, 'aria-hidden': 'true' },
+            lines.map((_, i) => h('div', { key: i }, String(i + 1))),
+          ),
+          h('textarea', {
+            ref: textRef,
+            value,
+            wrap: 'off',
+            spellCheck: false,
+            'aria-label': dict.editCodeLabel,
+            onChange: (event) => props.onChange(event.target.value),
+            onKeyDown,
+            onScroll,
+            style: styles.editorArea,
+          }),
+        ),
+        h(
+          'div',
+          { style: styles.lintBox },
+          issues.length
+            ? issues.map((issue, i) =>
+                h(
+                  'button',
+                  {
+                    key: i,
+                    type: 'button',
+                    title: dict.jumpHint,
+                    style: {
+                      ...styles.lintRow,
+                      color:
+                        issue.level === 'error'
+                          ? 'var(--dsw-alias-state-error-primary)'
+                          : issue.level === 'warn'
+                            ? 'var(--dsw-alias-state-warn-primary)'
+                            : 'var(--dsw-alias-label-tertiary)',
+                      cursor: issue.line ? 'pointer' : 'default',
+                    },
+                    onClick: () => jumpTo(issue.line),
+                  },
+                  issue.text,
+                ),
+              )
+            : h('span', { style: styles.lintOk }, dict.lintOk),
+        ),
+        h('p', { style: styles.hint }, dict.editorHelp),
+      )
+    }
+
     function Dialog(props) {
       const dict = t()
       const cancelRef = React.useRef(props.onCancel)
@@ -1368,6 +1628,48 @@ window.__ModuleLoader__.load({
       moveCheck: { fontSize: 12, color: 'var(--dsw-alias-brand-primary)' },
       moveRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
       editTitle: { width: '100%', boxSizing: 'border-box', minHeight: 34, maxHeight: 96, resize: 'vertical', fontFamily: 'inherit', fontSize: 13, lineHeight: '18px', padding: '7px 10px', borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-1)', color: 'var(--dsw-alias-label-primary)', outline: 'none' },
+      editorRow: {
+        display: 'flex',
+        alignItems: 'stretch',
+        maxHeight: 300,
+        border: '1px solid var(--dsw-alias-border-l2)',
+        borderRadius: 8,
+        background: 'var(--dsw-alias-bg-base)',
+        overflow: 'hidden',
+      },
+      gutter: {
+        flex: '0 0 36px',
+        padding: '8px 6px 8px 0',
+        textAlign: 'right',
+        overflow: 'hidden',
+        userSelect: 'none',
+        fontSize: 12,
+        lineHeight: '18px',
+        color: 'var(--dsw-alias-label-tertiary)',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+        background: 'var(--dsw-alias-bg-layer-1)',
+        fontVariantNumeric: 'tabular-nums',
+      },
+      editorArea: {
+        flex: 1,
+        minWidth: 0,
+        minHeight: 150,
+        resize: 'vertical',
+        border: 0,
+        outline: 'none',
+        background: 'transparent',
+        color: 'var(--dsw-alias-label-primary)',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+        fontSize: 12,
+        lineHeight: '18px',
+        padding: 8,
+        whiteSpace: 'pre',
+        overflow: 'auto',
+      },
+      lintBox: { display: 'flex', flexDirection: 'column', gap: 2, minHeight: 18 },
+      lintRow: { border: 0, background: 'transparent', padding: 0, textAlign: 'left', fontSize: 12, lineHeight: '17px', font: 'inherit' },
+      lintOk: { fontSize: 12, color: 'var(--dsw-alias-state-success-primary)' },
+      unsavedBadge: { color: 'var(--dsw-alias-state-warn-primary)' },
       editArea: { width: '100%', boxSizing: 'border-box', minHeight: 150, resize: 'vertical', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.5, padding: 8, borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-base)', color: 'var(--dsw-alias-label-primary)' },
       hint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
       folderBar: { display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' },
@@ -1786,6 +2088,8 @@ window.__ModuleLoader__.load({
       const [nameDraft, setNameDraft] = React.useState('')
       const [editTitle, setEditTitle] = React.useState('')
       const [editCode, setEditCode] = React.useState('')
+      const [editLang, setEditLang] = React.useState('text')
+      const [editBase, setEditBase] = React.useState({ title: '', code: '' })
       const [movePick, setMovePick] = React.useState('root')
       const [moveHover, setMoveHover] = React.useState('')
       const [dragOver, setDragOver] = React.useState(null)
@@ -2008,6 +2312,8 @@ window.__ModuleLoader__.load({
         if (!item) return
         setEditTitle(item.title)
         setEditCode(item.code)
+        setEditLang(item.lang)
+        setEditBase({ title: item.title, code: item.code })
         setDialogError('')
         setDialog({ kind: 'edit', id })
       }
@@ -2303,6 +2609,8 @@ window.__ModuleLoader__.load({
         crumb = h('div', { style: styles.crumbRow }, parts)
       }
 
+      const editDirty = editCode !== editBase.code || editTitle !== editBase.title
+
       const folderLabelFor = (item) =>
         searching && item.folderId ? folderLabelText(folders, item.folderId) : ''
 
@@ -2582,12 +2890,18 @@ window.__ModuleLoader__.load({
             onChange: (e) => setEditTitle(e.target.value),
             style: styles.editTitle,
           }),
-          h('p', { style: styles.meta }, dict.editCodeLabel),
-          h('textarea', {
+          h(
+            'p',
+            { style: styles.meta },
+            dict.editCodeLabel,
+            editDirty ? h('span', { style: styles.unsavedBadge }, ` · ${dict.unsaved}`) : null,
+          ),
+          h(CodeEditor, {
             value: editCode,
-            spellCheck: false,
-            onChange: (e) => setEditCode(e.target.value),
-            style: styles.editArea,
+            lang: editLang,
+            titleEmpty: !editTitle.trim(),
+            onChange: setEditCode,
+            onSave: runEdit,
           }),
           dialogError ? h('p', { style: styles.dialogError }, dialogError) : null,
         )
