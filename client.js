@@ -125,7 +125,10 @@ window.__ModuleLoader__.load({
         editSaved: 'Changes saved',
         unsaved: 'Unsaved',
         lintOk: 'No problems found.',
-        lintBrackets: (line) => `Unclosed or mismatched bracket on line ${line}.`,
+        lintUnclosed: (line) => `Line ${line}: bracket is never closed.`,
+        lintExtra: (line, ch) => `Line ${line}: unexpected "${ch}".`,
+        lintCount: (count) => `${count} problems`,
+        lintMore: (count) => `…and ${count} more`,
         lintJson: (message) => `Invalid JSON: ${message}`,
         lintJs: (message) => `JavaScript syntax error: ${message}`,
         lintTrailing: (count) => `${count} line(s) end with whitespace.`,
@@ -249,7 +252,10 @@ window.__ModuleLoader__.load({
         editSaved: '修改已保存',
         unsaved: '未保存',
         lintOk: '没有发现问题。',
-        lintBrackets: (line) => `第 ${line} 行的括号没有配对。`,
+        lintUnclosed: (line) => `第 ${line} 行有括号没闭合。`,
+        lintExtra: (line, ch) => `第 ${line} 行多了个「${ch}」。`,
+        lintCount: (count) => `共 ${count} 个问题`,
+        lintMore: (count) => `还有 ${count} 条…`,
         lintJson: (message) => `JSON 无效：${message}`,
         lintJs: (message) => `JS 语法错误：${message}`,
         lintTrailing: (count) => `有 ${count} 行以空格结尾。`,
@@ -1276,14 +1282,42 @@ window.__ModuleLoader__.load({
 
     // Cheap syntax feedback: bracket pairing plus a real parse for JSON and plain JS.
     // Nothing here runs the snippet — `new Function` only compiles it.
+    const COMMENT_PREFIX = (lang) => {
+      if (/^(sql|postgres|postgresql|mysql|sqlite|plsql|tsql)$/.test(lang)) return '--'
+      if (/^(py|python|sh|bash|zsh|shell|console|yaml|yml|toml|ini|ruby|rb|r|perl|make|makefile)$/.test(lang)) return '#'
+      if (/^(js|javascript|mjs|cjs|ts|typescript|tsx|jsx|java|c|cpp|csharp|cs|go|rust|rs|swift|kt|kotlin|scala|php|json5)$/.test(lang)) return '//'
+      return ''
+    }
+
+    // Bracket counting is naive, so anything after a line comment is blanked out
+    // first — otherwise `-- see (1` in a comment would report a phantom error.
+    const maskComments = (code, lang) => {
+      const prefix = COMMENT_PREFIX(lang)
+      if (!prefix) return code
+      return code
+        .split('\n')
+        .map((line) => {
+          const at = line.indexOf(prefix)
+          if (at < 0) return line
+          return line.slice(0, at) + ' '.repeat(line.length - at)
+        })
+        .join('\n')
+    }
+
+    const LINT_MAX = 8
+    const LINT_SCAN_MAX = 20000
+
     const lintCode = (code, lang, titleEmpty, dict) => {
       const issues = []
       const lower = String(lang || '').toLowerCase()
+      const source = maskComments(code.length > LINT_SCAN_MAX ? code.slice(0, LINT_SCAN_MAX) : code, lower)
 
+      // Walking the whole snippet (not stopping at the first mismatch) means one
+      // pass can report every stray bracket, which is what people fix in batches.
       const stack = []
       let quote = ''
-      for (let i = 0; i < code.length; i += 1) {
-        const ch = code[i]
+      for (let i = 0; i < source.length; i += 1) {
+        const ch = source[i]
         if (quote) {
           if (ch === '\\') i += 1
           else if (ch === quote) quote = ''
@@ -1300,15 +1334,20 @@ window.__ModuleLoader__.load({
         if (ch === ')' || ch === ']' || ch === '}') {
           const open = stack.pop()
           if (!open || EDIT_PAIRS[open.ch] !== ch) {
-            issues.push({ level: 'error', line: lineNumberAt(code, i), text: dict.lintBrackets(lineNumberAt(code, i)) })
-            stack.length = 0
-            break
+            const line = lineNumberAt(source, i)
+            issues.push({ level: 'error', line, text: dict.lintExtra(line, ch) })
           }
         }
       }
-      if (stack.length && !issues.length) {
-        const at = stack[stack.length - 1].at
-        issues.push({ level: 'error', line: lineNumberAt(code, at), text: dict.lintBrackets(lineNumberAt(code, at)) })
+      if (stack.length) {
+        const seen = new Set()
+        for (const open of stack) {
+          const line = lineNumberAt(source, open.at)
+          if (seen.has(line)) continue
+          seen.add(line)
+          issues.push({ level: 'error', line, text: dict.lintUnclosed(line) })
+          if (seen.size >= 3) break
+        }
       }
 
       if (/^(json|jsonc|json5)$/.test(lower)) {
@@ -1330,7 +1369,18 @@ window.__ModuleLoader__.load({
       if (trailing) issues.push({ level: 'warn', line: 0, text: dict.lintTrailing(trailing) })
       if (titleEmpty) issues.push({ level: 'info', line: 0, text: dict.lintTitleEmpty })
 
-      return issues.slice(0, 4)
+      const unique = []
+      const keys = new Set()
+      for (const issue of issues) {
+        const key = `${issue.level}:${issue.text}`
+        if (keys.has(key)) continue
+        keys.add(key)
+        unique.push(issue)
+      }
+      unique.sort((a, b) => (a.line || 999) - (b.line || 999))
+      const total = unique.length
+      const shown = unique.slice(0, LINT_MAX)
+      return { issues: shown, total }
     }
 
     function CodeEditor(props) {
@@ -1340,7 +1390,10 @@ window.__ModuleLoader__.load({
       const gutterRef = React.useRef(null)
       const caretRef = React.useRef(null)
       const lines = value.split('\n')
-      const issues = lintCode(value, props.lang, Boolean(props.titleEmpty), dict)
+      const report = lintCode(value, props.lang, Boolean(props.titleEmpty), dict)
+      const issues = report.issues
+      const errorLines = new Set(issues.filter((issue) => issue.level === 'error' && issue.line).map((issue) => issue.line))
+      const warnLines = new Set(issues.filter((issue) => issue.level === 'warn' && issue.line).map((issue) => issue.line))
 
       // A controlled textarea loses the caret on every edit, so the position is
       // stashed and re-applied after React commits the new value.
@@ -1455,7 +1508,20 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { ref: gutterRef, style: styles.gutter, 'aria-hidden': 'true' },
-            lines.map((_, i) => h('div', { key: i }, String(i + 1))),
+            lines.map((_, i) =>
+              h(
+                'div',
+                {
+                  key: i,
+                  style: errorLines.has(i + 1)
+                    ? styles.gutterBad
+                    : warnLines.has(i + 1)
+                      ? styles.gutterWarn
+                      : null,
+                },
+                String(i + 1),
+              ),
+            ),
           ),
           h('textarea', {
             ref: textRef,
@@ -1472,6 +1538,7 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { style: styles.lintBox },
+          report.total > 1 ? h('span', { style: styles.lintCount }, dict.lintCount(report.total)) : null,
           issues.length
             ? issues.map((issue, i) =>
                 h(
@@ -1496,6 +1563,9 @@ window.__ModuleLoader__.load({
                 ),
               )
             : h('span', { style: styles.lintOk }, dict.lintOk),
+          report.total > issues.length
+            ? h('span', { style: styles.lintMore }, dict.lintMore(report.total - issues.length))
+            : null,
         ),
         h('p', { style: styles.hint }, dict.editorHelp),
       )
@@ -1669,6 +1739,10 @@ window.__ModuleLoader__.load({
       lintBox: { display: 'flex', flexDirection: 'column', gap: 2, minHeight: 18 },
       lintRow: { border: 0, background: 'transparent', padding: 0, textAlign: 'left', fontSize: 12, lineHeight: '17px', font: 'inherit' },
       lintOk: { fontSize: 12, color: 'var(--dsw-alias-state-success-primary)' },
+      lintCount: { fontSize: 12, color: 'var(--dsw-alias-state-warn-primary)', fontWeight: 600 },
+      lintMore: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
+      gutterBad: { color: 'var(--dsw-alias-state-error-primary)', fontWeight: 600 },
+      gutterWarn: { color: 'var(--dsw-alias-state-warn-primary)' },
       unsavedBadge: { color: 'var(--dsw-alias-state-warn-primary)' },
       editArea: { width: '100%', boxSizing: 'border-box', minHeight: 150, resize: 'vertical', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.5, padding: 8, borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-base)', color: 'var(--dsw-alias-label-primary)' },
       hint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
