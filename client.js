@@ -140,6 +140,8 @@ window.__ModuleLoader__.load({
         renameFolder: 'Rename',
         deleteFolder: 'Delete folder',
         folderName: 'Folder name',
+        expand: 'Expand subfolders',
+        collapse: 'Collapse subfolders',
         folderNamePlaceholder: 'e.g. Project A / Frontend',
         folderDeleteTitle: 'Delete folder',
         folderDeleteText: (n) => `Delete this folder? Its ${n} item(s) and subfolders move up one level — nothing is lost.`,
@@ -296,6 +298,8 @@ window.__ModuleLoader__.load({
         renameFolder: '重命名',
         deleteFolder: '删除文件夹',
         folderName: '文件夹名字',
+        expand: '展开子文件夹',
+        collapse: '收起子文件夹',
         folderNamePlaceholder: '比如：项目 A / 前端',
         folderDeleteTitle: '删除文件夹',
         folderDeleteText: (n) => `删除这个文件夹？里面的 ${n} 条内容和子文件夹会移到上一层，不会丢。`,
@@ -2007,13 +2011,47 @@ window.__ModuleLoader__.load({
       tabsHint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)', marginLeft: 4 },
       split: { display: 'flex', gap: 12, alignItems: 'flex-start' },
       tree: { width: 208, flex: '0 0 208px', display: 'flex', flexDirection: 'column', gap: 1, borderRight: '1px solid var(--dsw-alias-border-l2)', paddingRight: 10, minHeight: 120, position: 'sticky', top: 0, alignSelf: 'flex-start' },
-      treeRow: { display: 'flex', alignItems: 'center', gap: 3, borderRadius: 8, padding: '4px 6px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)', border: '1px solid transparent' },
-      treeRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600, boxShadow: 'inset 2px 0 0 var(--dsw-alias-brand-primary)' },
+      treeRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        borderRadius: 8,
+        padding: '5px 8px',
+        margin: '1px 0',
+        cursor: 'pointer',
+        fontSize: 13,
+        lineHeight: '18px',
+        color: 'var(--dsw-alias-label-secondary)',
+        border: '1px solid transparent',
+        outline: 'none',
+      },
+      treeRowHover: { background: 'var(--dsw-alias-interactive-bg-hover)' },
+      treeRowOn: {
+        background: 'var(--dsw-alias-bg-layer-2)',
+        color: 'var(--dsw-alias-label-primary)',
+        fontWeight: 600,
+        border: '1px solid var(--dsw-alias-border-l1)',
+        boxShadow: 'inset 2px 0 0 var(--dsw-alias-brand-primary)',
+      },
       treeRowDrop: { border: '1px dashed var(--dsw-alias-brand-primary)', background: 'var(--dsw-alias-bg-layer-2)' },
-      treeChev: { width: 16, height: 16, lineHeight: '14px', textAlign: 'center', fontSize: 10, color: 'var(--dsw-alias-label-tertiary)', border: 0, background: 'transparent', cursor: 'pointer', padding: 0, flex: '0 0 16px' },
-      treeName: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      treeChev: {
+        width: 18,
+        height: 18,
+        minWidth: 18,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--dsw-alias-label-tertiary)',
+        border: 0,
+        background: 'transparent',
+        cursor: 'pointer',
+        padding: 0,
+        flex: '0 0 18px',
+        borderRadius: 4,
+      },
+      treeName: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
       treeCount: { marginLeft: 'auto', fontSize: 11, color: 'var(--dsw-alias-label-tertiary)', fontVariantNumeric: 'tabular-nums' },
-      treeSep: { height: 1, background: 'var(--dsw-alias-border-l2)', margin: '4px 2px' },
+      treeSep: { height: 1, background: 'var(--dsw-alias-border-l1)', margin: '6px 4px' },
       main: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 },
       crumbRow: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', minHeight: 22 },
       crumb: { font: 'inherit', cursor: 'pointer', border: 0, background: 'transparent', color: 'var(--dsw-alias-label-secondary)', padding: 0, fontSize: 12 },
@@ -2468,8 +2506,36 @@ window.__ModuleLoader__.load({
       )
     }
 
+    // Small inline SVGs keep the tree legible without depending on the host's icon font or on
+    // glyphs like ▸ that fall back to odd-looking characters in some fonts.
+    function treeIcon(kind, active, size) {
+      const px = size || 14
+      const color = active ? 'var(--dsw-alias-brand-primary)' : 'var(--dsw-alias-label-tertiary)'
+      const common = {
+        width: px,
+        height: px,
+        viewBox: '0 0 16 16',
+        'aria-hidden': true,
+        style: { flex: `0 0 ${px}px`, color, display: 'block' },
+      }
+      if (kind === 'chev-down') {
+        return h('svg', common, h('path', { d: 'M4.5 6.2 8 9.7l3.5-3.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' }))
+      }
+      if (kind === 'chev-right') {
+        return h('svg', common, h('path', { d: 'M6.2 4.5 9.7 8l-3.5 3.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' }))
+      }
+      if (kind === 'all') {
+        return h('svg', common, h('path', { d: 'M4.2 2.6h7.6v10.8L8 10.7l-3.8 2.7z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinejoin: 'round' }))
+      }
+      if (kind === 'unfiled') {
+        return h('svg', common, h('path', { d: 'M2.4 9.4h3.2l.9 1.5h3l.9-1.5h3.2M2.4 9.4V4.1c0-.7.5-1.2 1.2-1.2h8.8c.7 0 1.2.5 1.2 1.2v5.3m-11.2 0v2.5c0 .7.5 1.2 1.2 1.2h8.8c.7 0 1.2-.5 1.2-1.2V9.4', fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, strokeLinejoin: 'round' }))
+      }
+      return h('svg', common, h('path', { d: 'M1.9 4.5c0-.65.53-1.2 1.2-1.2h3l1.3 1.4h5.5c.66 0 1.2.54 1.2 1.2v6.1c0 .66-.54 1.2-1.2 1.2H3.1c-.66 0-1.2-.54-1.2-1.2z', fill: active ? 'var(--dsw-alias-bg-layer-2)' : 'none', stroke: 'currentColor', strokeWidth: 1.35, strokeLinejoin: 'round' }))
+    }
+
     function FolderTree(props) {
       const dict = t()
+      const [hovered, setHovered] = React.useState('')
       const children = new Map()
       for (const folder of props.folders) {
         const key = folder.parentId || ''
@@ -2482,9 +2548,29 @@ window.__ModuleLoader__.load({
       const row = (key, label, count, depth, opts) => {
         const active = props.current === key
         const drop = props.dragOver === key
-        const style = { ...styles.treeRow, paddingLeft: 4 + depth * 12 }
-        if (active) Object.assign(style, styles.treeRowOn)
-        if (drop) Object.assign(style, styles.treeRowDrop)
+        const hot = !active && hovered === key
+        const hasKids = Boolean(opts.hasKids)
+        const expanded = hasKids && props.expanded.includes(key)
+        let style = styles.treeRow
+        if (active) style = { ...style, ...styles.treeRowOn }
+        else if (hot) style = { ...style, ...styles.treeRowHover }
+        if (drop) style = { ...style, ...styles.treeRowDrop }
+        const guides = []
+        for (let level = 0; level < depth; level += 1) {
+          guides.push(
+            h('span', {
+              key: `guide-${level}`,
+              'aria-hidden': true,
+              style: {
+                flex: '0 0 12px',
+                width: 12,
+                alignSelf: 'stretch',
+                borderLeft: level === depth - 1 ? '1px solid var(--dsw-alias-border-l1)' : 'none',
+                marginLeft: level === depth - 1 ? 4 : 0,
+              },
+            }),
+          )
+        }
         return h(
           'div',
           {
@@ -2492,9 +2578,12 @@ window.__ModuleLoader__.load({
             style,
             role: 'treeitem',
             'aria-selected': active,
+            'aria-expanded': hasKids ? expanded : undefined,
             tabIndex: 0,
             title: label,
             onClick: () => props.onSelect(key),
+            onMouseEnter: () => setHovered(key),
+            onMouseLeave: () => setHovered(''),
             onKeyDown: (event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
@@ -2516,22 +2605,24 @@ window.__ModuleLoader__.load({
               props.onDrop(event, key)
             },
           },
-          opts.toggle
+          guides,
+          hasKids
             ? h(
                 'button',
                 {
                   type: 'button',
                   style: styles.treeChev,
-                  title: dict.folderName,
-                  'aria-hidden': true,
+                  title: expanded ? dict.collapse || label : dict.expand || label,
+                  'aria-label': expanded ? dict.collapse || label : dict.expand || label,
                   onClick: (event) => {
                     event.stopPropagation()
                     props.onToggle(key)
                   },
                 },
-                props.expanded.includes(key) ? '▾' : '▸',
+                treeIcon(expanded ? 'chev-down' : 'chev-right', active, 12),
               )
-            : h('span', { style: { ...styles.treeChev, visibility: 'hidden' } }, '▸'),
+            : h('span', { 'aria-hidden': true, style: { flex: '0 0 18px', width: 18 } }),
+          treeIcon(opts.icon || 'folder', active, 14),
           h('span', { style: styles.treeName }, label),
           h('span', { style: styles.treeCount }, String(count || 0)),
         )
@@ -2543,7 +2634,8 @@ window.__ModuleLoader__.load({
           rows.push(
             row(folder.id, folder.name, props.counts.get(folder.id), depth, {
               droppable: true,
-              toggle: kids.length > 0,
+              hasKids: kids.length > 0,
+              icon: 'folder',
             }),
           )
           if (kids.length && props.expanded.includes(folder.id)) walk(folder.id, depth + 1)
@@ -2553,11 +2645,13 @@ window.__ModuleLoader__.load({
       walk('', 0)
 
       const list = [
-        row('all', dict.allItems, props.snippetCount, 0, { droppable: false, toggle: false }),
+        row('all', dict.allItems, props.snippetCount, 0, { droppable: false, icon: 'all' }),
         ...rows,
       ]
-      list.push(h('div', { key: 'sep', style: styles.treeSep, 'aria-hidden': true }))
-      list.push(row('unfiled', dict.unfiled, props.unfiledCount, 0, { droppable: true, toggle: false }))
+      if (rows.length) {
+        list.push(h('div', { key: 'sep', style: styles.treeSep, 'aria-hidden': true }))
+      }
+      list.push(row('unfiled', dict.unfiled, props.unfiledCount, 0, { droppable: true, icon: 'unfiled' }))
       return h('div', { style: styles.tree, role: 'tree', 'aria-label': dict.favorites }, list)
     }
 
