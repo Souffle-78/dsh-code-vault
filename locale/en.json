@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Code Vault",
-    "description": "Save code blocks from a chat into a local vault. Click “Save to vault” at the bottom right of any code block (click again to remove it), then open the bookmark icon in the sidebar to search, tag, copy, or put a saved block straight back into the composer. “Select” turns the list into checkboxes for batch copy, batch tagging and batch delete, and lets you merge two or more blocks into one new entry — every destructive action asks for confirmation first. Press ⌘⇧K (Ctrl+Shift+K on Windows/Linux) anywhere for the quick-insert overlay, and use “Save draft” under the composer to keep a half-written prompt. Everything stays in this browser (no upload, no cross-device sync); use Export/Import to move machines. The panel defaults to Chinese; switch 中文/English at its top right.",
+    "description": "Collect code blocks from a conversation into a local vault and half-written composer text into a separate drafts box, organised in nested folders: search, tags, batch actions, merge, and ⌘⇧K quick insert. Stored in this browser only.",
     "detail": "docs/DETAIL.md"
   }
 }

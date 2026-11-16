@@ -16,10 +16,10 @@ window.__ModuleLoader__.load({
     const DICT = {
       en: {
         title: 'Code Vault',
-        subtitle: 'Keep code from this chat — local, searchable, one click away',
+        subtitle: 'Favourite code and drafts from this chat — sorted into folders, local, one click away',
         search: 'Search code, language, or tag',
         all: 'All',
-        empty: 'Nothing saved yet — here is the whole flow in three steps:',
+        empty: 'Nothing here yet — this is the whole flow:',
         copy: 'Copy',
         copied: 'Copied',
         copyFailed: 'Copy failed — select the code instead',
@@ -42,12 +42,13 @@ window.__ModuleLoader__.load({
         imported: (n) => `Imported ${n} block(s)`,
         importNone: 'Nothing new — those blocks are already saved',
         storeFailed: 'Could not write to browser storage — it may be full',
-        searchEmpty: 'No saved code matches this search.',
+        searchEmpty: 'Nothing matches this search.',
         how: 'How it works',
         hideHow: 'Hide',
         step1: 'In a conversation, every code block has a “Save to vault” button in its bottom-right corner.',
-        step2: 'Click it — the block is stored in this browser only.',
-        step3: 'Come back here to search, tag, copy, or put it straight back into the composer.',
+        step2: 'Saved code lands in Vault. Make folders and drag cards onto them — nested folders work like files on a computer.',
+        step3: 'Half-written text is better kept as a draft: use “Save draft” under the composer, then move it here when it is ready.',
+        step4: 'The shortcut opens quick insert anywhere; the composer draft button saves your scratch text without leaving the chat.',
         localOnly: 'Stored in this browser only. Use Export/Import to back up or move machines.',
         openChat: 'Open a conversation',
         langHint: 'Language',
@@ -78,24 +79,61 @@ window.__ModuleLoader__.load({
         removed: 'Deleted',
         tagPrompt: 'Tag name, then Enter',
         confirmNote: 'This step needs one more click.',
-        step4: 'In a hurry: the button below the composer saves the half-written draft as a snippet, and the quick-insert shortcut reaches the vault without leaving the chat.',
         saveDraft: 'Save draft',
-        draftSaved: 'Draft saved to the vault',
-        draftDup: 'That draft is already in the vault',
+        draftSaved: 'Draft saved — find it in Drafts',
+        draftDup: 'That draft is already saved',
         quick: 'Quick insert',
-        quickPlaceholder: 'Search saved snippets — Enter inserts',
-        quickEmpty: 'No snippet matches this search.',
+        quickPlaceholder: 'Search saved code — Enter inserts',
+        quickEmpty: 'No saved code matches this search.',
         quickNoAssets: 'The vault is empty — save a code block in a conversation first.',
         quickHint: '↑↓ choose · Enter insert · Esc close',
         quickCount: (n) => `${n} saved`,
         quickClose: 'Close',
+        favorites: 'Vault',
+        drafts: 'Drafts',
+        favoritesHint: 'Saved code, organised in folders',
+        draftsHint: 'Scratch text — move it here when it becomes code',
+        draftsEmpty: 'No drafts yet. Write something in the composer and press “Save draft” under it.',
+        toFavorites: 'Move to vault',
+        draftMoved: (n) => `Moved ${n} draft(s) to the vault`,
+        moved: (n) => `Moved ${n} item(s)`,
+        moveFailed: 'Could not move — browser storage may be full',
+        newFolder: 'New folder',
+        renameFolder: 'Rename',
+        deleteFolder: 'Delete folder',
+        folderName: 'Folder name',
+        folderNamePlaceholder: 'e.g. Project A / Frontend',
+        folderDeleteTitle: 'Delete folder',
+        folderDeleteText: (n) => `Delete this folder? Its ${n} item(s) and subfolders move up one level — nothing is lost.`,
+        folderEmpty: 'This folder is empty.',
+        folderEmptyHint: 'Drag cards onto a folder on the left, or use “More → Move to…” on a card.',
+        folderExists: 'A folder with that name already exists here',
+        folderCreated: 'Folder created',
+        folderRenamed: 'Folder renamed',
+        folderFailed: 'Could not save the folder',
+        allItems: 'All saved',
+        unfiled: 'Unsorted',
+        move: 'Move to…',
+        moveTitle: 'Move to',
+        moveHint: 'Pick a folder, or “Unsorted” to take them out of folders.',
+        moveRoot: 'Unsorted (no folder)',
+        edit: 'Edit',
+        editTitleLabel: 'Title',
+        editCodeLabel: 'Code',
+        saveChanges: 'Save',
+        editSaved: 'Changes saved',
+        editFailed: 'Could not save — browser storage may be full',
+        more: 'More',
+        less: 'Less',
+        dragHint: 'Drag this card onto a folder on the left',
+        searchInAll: 'Searching every folder',
       },
       zh: {
         title: '代码收藏夹',
-        subtitle: '把对话里的代码收进本地收藏夹，随时搜、随时插',
+        subtitle: '把对话里的代码和草稿收进本地收藏夹，按文件夹分好，随时搜、随时插',
         search: '搜代码 / 语言 / 标签',
         all: '全部',
-        empty: '还没有收藏。用法就三步：',
+        empty: '这里还是空的，整个流程是这样：',
         copy: '复制',
         copied: '已复制',
         copyFailed: '复制失败，请手动选中复制',
@@ -118,12 +156,13 @@ window.__ModuleLoader__.load({
         imported: (n) => `已导入 ${n} 条`,
         importNone: '没有新内容，这些代码已经收藏过了',
         storeFailed: '浏览器存储写入失败，可能空间已满',
-        searchEmpty: '没有匹配的收藏。',
+        searchEmpty: '没有匹配的内容。',
         how: '怎么用',
         hideHow: '收起',
         step1: '在对话里，每个代码块右下角都有一个「收藏代码块」按钮。',
-        step2: '点它就好——代码只存在这台浏览器里，不上传。',
-        step3: '回到这个面板：搜索、打标签、复制，或一键插回输入框继续改。',
+        step2: '收藏的代码进「收藏夹」；可以建文件夹，把卡片拖到左侧文件夹里分类，文件夹还能再套文件夹。',
+        step3: '写到一半的文字先存「草稿箱」更合适：输入框下方点「存草稿」，整理好再移进收藏夹。',
+        step4: '快捷键可以随时唤起快速插入；输入框下方的存草稿按钮不用离开对话就能把半成品收起来。',
         localOnly: '只存本地浏览器。换设备用「导出 / 导入」。',
         openChat: '去对话里试一下',
         langHint: '语言',
@@ -154,17 +193,54 @@ window.__ModuleLoader__.load({
         removed: '已删除',
         tagPrompt: '标签名，回车确认',
         confirmNote: '这一步需要再点一次确认。',
-        step4: '赶时间的时候：输入框下方有「存草稿」，不用离开对话就能用快捷键唤起收藏夹。',
         saveDraft: '存草稿',
-        draftSaved: '草稿已存进收藏夹',
-        draftDup: '这段草稿已经在收藏夹里了',
+        draftSaved: '草稿已存进草稿箱',
+        draftDup: '这段草稿已经存过了',
         quick: '快速插入',
-        quickPlaceholder: '搜索收藏的片段 · 回车插入',
-        quickEmpty: '没有匹配的片段。',
+        quickPlaceholder: '搜索收藏的代码 · 回车插入',
+        quickEmpty: '没有匹配的内容。',
         quickNoAssets: '收藏夹还是空的——先去对话里收藏一个代码块。',
         quickHint: '↑↓ 选择 · 回车插入 · Esc 关闭',
         quickCount: (n) => `共 ${n} 条`,
         quickClose: '关闭',
+        favorites: '收藏夹',
+        drafts: '草稿箱',
+        favoritesHint: '收藏的代码，按文件夹分类',
+        draftsHint: '半成品先放这里，整理好再移进收藏夹',
+        draftsEmpty: '草稿箱是空的。在输入框写点东西，点它下面的「存草稿」。',
+        toFavorites: '移入收藏夹',
+        draftMoved: (n) => `已把 ${n} 条草稿移入收藏夹`,
+        moved: (n) => `已移动 ${n} 条`,
+        moveFailed: '移动失败，浏览器存储可能已满',
+        newFolder: '新建文件夹',
+        renameFolder: '重命名',
+        deleteFolder: '删除文件夹',
+        folderName: '文件夹名字',
+        folderNamePlaceholder: '比如：项目 A / 前端',
+        folderDeleteTitle: '删除文件夹',
+        folderDeleteText: (n) => `删除这个文件夹？里面的 ${n} 条内容和子文件夹会移到上一层，不会丢。`,
+        folderEmpty: '这个文件夹还是空的。',
+        folderEmptyHint: '把卡片拖到左侧文件夹，或者用卡片上的「更多 → 移动到…」。',
+        folderExists: '这一层已经有同名文件夹了',
+        folderCreated: '文件夹已建好',
+        folderRenamed: '文件夹已重命名',
+        folderFailed: '文件夹没保存成功',
+        allItems: '全部收藏',
+        unfiled: '未分类',
+        move: '移动到…',
+        moveTitle: '移动到哪里',
+        moveHint: '选一个文件夹；选「未分类」就是从文件夹里拿出来。',
+        moveRoot: '未分类（不放进文件夹）',
+        edit: '编辑',
+        editTitleLabel: '标题',
+        editCodeLabel: '代码',
+        saveChanges: '保存',
+        editSaved: '修改已保存',
+        editFailed: '保存失败，浏览器存储可能已满',
+        more: '更多',
+        less: '收起',
+        dragHint: '可以把这张卡片拖到左侧文件夹里',
+        searchInAll: '正在所有文件夹中搜索',
       },
     }
 
@@ -213,7 +289,9 @@ window.__ModuleLoader__.load({
 
     // ------------------------------------------------------------------ store
 
-    let cache = null
+    // Everything lives under one key: snippets and drafts share the item shape, and folders are a
+    // flat parent-linked list rather than nested objects, so moving one is a single parentId edit.
+    let state = null
     const listeners = new Set()
 
     function emit() {
@@ -227,109 +305,6 @@ window.__ModuleLoader__.load({
     function subscribe(fn) {
       listeners.add(fn)
       return () => listeners.delete(fn)
-    }
-
-    // Entries saved before titles were cleaned kept the raw first line, comment marker and
-    // all. Re-derive those on read; titles the user typed (merge results) are left alone.
-    function titleFrom(raw) {
-      const stored = typeof raw.title === 'string' ? raw.title.trim().slice(0, 80) : ''
-      if (!stored) return titleOf(raw.code)
-      const legacy = firstLine(raw.code).slice(0, 60)
-      return stored === legacy ? titleOf(raw.code) : stored
-    }
-
-    function normalize(raw) {
-      if (!raw || typeof raw !== 'object') return null
-      if (typeof raw.code !== 'string' || raw.code.trim() === '') return null
-      const tags = []
-      if (Array.isArray(raw.tags)) {
-        for (const value of raw.tags) {
-          if (typeof value !== 'string') continue
-          const tag = value.trim().slice(0, 24)
-          if (tag && !tags.includes(tag)) tags.push(tag)
-        }
-      }
-      return {
-        id: typeof raw.id === 'string' && raw.id ? raw.id : newId(),
-        title: titleFrom(raw),
-        lang: typeof raw.lang === 'string' ? raw.lang.slice(0, 24) : '',
-        code: raw.code.slice(0, MAX_CODE),
-        tags,
-        createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(),
-      }
-    }
-
-    function readAll() {
-      if (cache) return cache
-      try {
-        const raw = window.localStorage.getItem(STORE_KEY)
-        const parsed = raw ? JSON.parse(raw) : []
-        const list = Array.isArray(parsed) ? parsed.map(normalize).filter(Boolean) : []
-        cache = list
-      } catch {
-        cache = []
-      }
-      return cache
-    }
-
-    function writeAll(list) {
-      const seen = new Set()
-      const next = []
-      for (const item of list) {
-        const copy = seen.has(item.id) ? { ...item, id: newId() } : item
-        seen.add(copy.id)
-        next.push(copy)
-      }
-      next.length = Math.min(next.length, LIMIT)
-      const previous = cache
-      cache = next
-      savedSigs = null
-      try {
-        window.localStorage.setItem(STORE_KEY, JSON.stringify(next))
-      } catch {
-        // Quota or a locked-down storage: revert so memory never claims what storage refused.
-        cache = previous
-        savedSigs = null
-        return false
-      }
-      emit()
-      return true
-    }
-
-    let savedSigs = null
-
-    // Every fence asks "is this exact code already in the vault?" on render, so answer from a
-    // hash index instead of comparing all stored code strings.
-    function sigOf(lang, code) {
-      let hash = 5381
-      for (let i = 0; i < code.length; i += 1) hash = ((hash << 5) + hash + code.charCodeAt(i)) | 0
-      return `${lang}:${code.length}:${hash >>> 0}`
-    }
-
-    function isSaved(lang, code) {
-      if (typeof code !== 'string' || code === '') return false
-      if (!savedSigs) savedSigs = new Set(readAll().map((item) => sigOf(item.lang, item.code)))
-      // The index answers "almost certainly no" fast; a hit is confirmed by value so a hash
-      // collision can never make a block look saved (and block saving it for real).
-      if (!savedSigs.has(sigOf(lang || '', code))) return false
-      return readAll().some((item) => item.lang === (lang || '') && item.code === code)
-    }
-
-    const searchCache = new WeakMap()
-
-    function searchTextOf(item) {
-      let text = searchCache.get(item)
-      if (text === undefined) {
-        text = `${item.title}\n${item.lang}\n${item.tags.join(' ')}\n${item.code}`.toLowerCase()
-        searchCache.set(item, text)
-      }
-      return text
-    }
-
-    function forgetCache() {
-      cache = null
-      savedSigs = null
-      emit()
     }
 
     function newId() {
@@ -372,43 +347,396 @@ window.__ModuleLoader__.load({
       return rest.trim() ? rest : asset.code
     }
 
-    function addAsset(input) {
-      const item = normalize({ ...input, createdAt: Date.now() })
-      if (!item) return null
-      const list = readAll()
-      const dup = list.find((x) => x.code === item.code && x.lang === item.lang)
-      if (dup) return dup
-      return writeAll([item, ...list]) ? item : null
+    // Entries saved before titles were cleaned kept the raw first line, comment marker and
+    // all. Re-derive those on read; titles the user typed (merge results, edits) are left alone.
+    function titleFrom(raw) {
+      const stored = typeof raw.title === 'string' ? raw.title.trim().slice(0, 80) : ''
+      if (!stored) return titleOf(raw.code)
+      const legacy = firstLine(raw.code).slice(0, 60)
+      return stored === legacy ? titleOf(raw.code) : stored
     }
 
-    function mergeAssets(items) {
-      const list = readAll().slice()
-      let added = 0
-      for (const raw of items) {
-        const item = normalize(raw)
-        if (!item) continue
-        if (list.some((x) => x.code === item.code && x.lang === item.lang)) continue
-        list.push(item)
-        added += 1
+    function normalizeItem(raw) {
+      if (!raw || typeof raw !== 'object') return null
+      if (typeof raw.code !== 'string' || raw.code.trim() === '') return null
+      const tags = []
+      if (Array.isArray(raw.tags)) {
+        for (const value of raw.tags) {
+          if (typeof value !== 'string') continue
+          const tag = value.trim().slice(0, 24)
+          if (tag && !tags.includes(tag)) tags.push(tag)
+        }
       }
-      if (!added) return 0
-      return writeAll(list) ? added : -1
+      return {
+        id: typeof raw.id === 'string' && raw.id ? raw.id : newId(),
+        title: titleFrom(raw),
+        lang: typeof raw.lang === 'string' ? raw.lang.slice(0, 24) : '',
+        code: raw.code.slice(0, MAX_CODE),
+        tags,
+        kind: raw.kind === 'draft' ? 'draft' : 'snippet',
+        folderId: typeof raw.folderId === 'string' && raw.folderId ? raw.folderId : null,
+        createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(),
+      }
+    }
+
+    function normalizeFolder(raw) {
+      if (!raw || typeof raw !== 'object') return null
+      const name = String(raw.name || '').trim().slice(0, 40)
+      if (!name) return null
+      return {
+        id: typeof raw.id === 'string' && raw.id ? raw.id : newId(),
+        name,
+        parentId: typeof raw.parentId === 'string' && raw.parentId ? raw.parentId : null,
+        createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(),
+      }
+    }
+
+    // Repair whatever is on disk: drop folders whose parent vanished, break parent cycles, and
+    // send items whose folder is gone back to "unsorted" instead of hiding them.
+    function sanitizeFolders(list) {
+      const byId = new Map()
+      for (const folder of list) if (!byId.has(folder.id)) byId.set(folder.id, { ...folder })
+      for (const folder of byId.values()) {
+        if (folder.parentId && !byId.has(folder.parentId)) folder.parentId = null
+      }
+      for (const folder of byId.values()) {
+        const seen = new Set([folder.id])
+        let parent = folder.parentId
+        while (parent) {
+          if (seen.has(parent)) {
+            folder.parentId = null
+            break
+          }
+          seen.add(parent)
+          const next = byId.get(parent)
+          parent = next ? next.parentId : null
+        }
+      }
+      return Array.from(byId.values()).slice(0, 200)
+    }
+
+    function readState() {
+      if (state) return state
+      let items = []
+      let folders = []
+      try {
+        const raw = window.localStorage.getItem(STORE_KEY)
+        const parsed = raw ? JSON.parse(raw) : null
+        const source = Array.isArray(parsed)
+          ? parsed
+          : parsed && Array.isArray(parsed.items)
+            ? parsed.items
+            : parsed && Array.isArray(parsed.assets)
+              ? parsed.assets
+              : []
+        const folderSource = parsed && !Array.isArray(parsed) && Array.isArray(parsed.folders) ? parsed.folders : []
+        items = source.map(normalizeItem).filter(Boolean)
+        folders = sanitizeFolders(folderSource.map(normalizeFolder).filter(Boolean))
+      } catch {
+        items = []
+        folders = []
+      }
+      const known = new Set(folders.map((folder) => folder.id))
+      items = items.map((item) => (item.folderId && !known.has(item.folderId) ? { ...item, folderId: null } : item))
+      state = { items, folders }
+      return state
+    }
+
+    function writeState(next) {
+      const previous = state
+      const seen = new Set()
+      const items = []
+      for (const item of next.items) {
+        const copy = seen.has(item.id) ? { ...item, id: newId() } : item
+        seen.add(copy.id)
+        items.push(copy)
+      }
+      items.length = Math.min(items.length, LIMIT)
+      const folders = sanitizeFolders(next.folders || [])
+      const value = { version: 3, items, folders }
+      state = value
+      savedSigs = null
+      try {
+        window.localStorage.setItem(STORE_KEY, JSON.stringify(value))
+      } catch {
+        // Quota or a locked-down storage: revert so memory never claims what storage refused.
+        state = previous
+        savedSigs = null
+        return false
+      }
+      emit()
+      return true
+    }
+
+    // Reads for the fence, the quick picker and the panel all start from a plain item list.
+    function readAll() {
+      return readState().items
+    }
+
+    let savedSigs = null
+
+    // Every fence asks "is this exact code already in the vault?" on render, so answer from a
+    // hash index instead of comparing all stored code strings.
+    function sigOf(lang, code) {
+      let hash = 5381
+      for (let i = 0; i < code.length; i += 1) hash = ((hash << 5) + hash + code.charCodeAt(i)) | 0
+      return `${lang}:${code.length}:${hash >>> 0}`
+    }
+
+    function isSaved(lang, code) {
+      if (typeof code !== 'string' || code === '') return false
+      const snippets = () => readAll().filter((item) => item.kind === 'snippet')
+      if (!savedSigs) savedSigs = new Set(snippets().map((item) => sigOf(item.lang, item.code)))
+      // The index answers "almost certainly no" fast; a hit is confirmed by value so a hash
+      // collision can never make a block look saved (and block saving it for real).
+      if (!savedSigs.has(sigOf(lang || '', code))) return false
+      return snippets().some((item) => item.lang === (lang || '') && item.code === code)
+    }
+
+    const searchCache = new WeakMap()
+
+    function searchTextOf(item) {
+      let text = searchCache.get(item)
+      if (text === undefined) {
+        text = `${item.title}\n${item.lang}\n${item.tags.join(' ')}\n${item.code}`.toLowerCase()
+        searchCache.set(item, text)
+      }
+      return text
+    }
+
+    function forgetCache() {
+      state = null
+      savedSigs = null
+      emit()
+    }
+
+    function writeItems(items) {
+      return writeState({ items, folders: readState().folders })
+    }
+
+    function addItem(input) {
+      const item = normalizeItem({ ...input, createdAt: Date.now() })
+      if (!item) return null
+      const current = readState()
+      const dup = current.items.find(
+        (x) => x.code === item.code && x.lang === item.lang && x.kind === item.kind,
+      )
+      if (dup) return dup
+      return writeState({ items: [item, ...current.items], folders: current.folders }) ? item : null
+    }
+
+    function addAsset(input) {
+      return addItem({ ...input, kind: 'snippet' })
+    }
+
+    function addDraft(input) {
+      return addItem({ ...input, kind: 'draft' })
+    }
+
+    function updateItem(id, patch) {
+      const current = readState()
+      let changed = false
+      const items = current.items.map((item) => {
+        if (item.id !== id) return item
+        const merged = normalizeItem({ ...item, ...patch })
+        if (!merged) return item
+        changed = true
+        return { ...merged, id: item.id, kind: item.kind, folderId: merged.folderId }
+      })
+      if (!changed) return false
+      return writeState({ items, folders: current.folders })
+    }
+
+    function removeItems(ids) {
+      const set = new Set(ids)
+      const current = readState()
+      const items = current.items.filter((item) => !set.has(item.id))
+      if (items.length === current.items.length) return false
+      return writeState({ items, folders: current.folders })
     }
 
     function removeAsset(id) {
-      return writeAll(readAll().filter((x) => x.id !== id))
+      return removeItems([id])
+    }
+
+    function moveItems(ids, folderId) {
+      const set = new Set(ids)
+      const current = readState()
+      const target = folderId && current.folders.some((folder) => folder.id === folderId) ? folderId : null
+      let changed = false
+      const items = current.items.map((item) => {
+        if (!set.has(item.id) || item.folderId === target) return item
+        changed = true
+        return { ...item, folderId: target }
+      })
+      if (!changed) return true
+      return writeState({ items, folders: current.folders })
+    }
+
+    // Drafts become normal snippets only when the user moves them into the vault.
+    function promoteItems(ids, folderId) {
+      const set = new Set(ids)
+      const current = readState()
+      const target = folderId && current.folders.some((folder) => folder.id === folderId) ? folderId : null
+      let changed = false
+      const items = current.items.map((item) => {
+        if (!set.has(item.id) || item.kind !== 'draft') return item
+        changed = true
+        return { ...item, kind: 'snippet', folderId: target }
+      })
+      if (!changed) return false
+      return writeState({ items, folders: current.folders })
     }
 
     // The fence button toggles by content: it never knows an asset id, and the same code with
     // the same language is one entry thanks to the save-time dedupe.
     function unsaveAsset(lang, code) {
-      const hit = readAll().find((item) => item.lang === (lang || '') && item.code === code)
+      const hit = readAll().find(
+        (item) => item.kind === 'snippet' && item.lang === (lang || '') && item.code === code,
+      )
       if (!hit) return false
-      return writeAll(readAll().filter((item) => item.id !== hit.id))
+      return removeAsset(hit.id)
     }
 
-    function patchAsset(id, patch) {
-      return writeAll(readAll().map((x) => (x.id === id ? normalize({ ...x, ...patch }) || x : x)))
+    function folderMap() {
+      const map = new Map()
+      for (const folder of readState().folders) map.set(folder.id, folder)
+      return map
+    }
+
+    function folderPathOf(id) {
+      const map = folderMap()
+      const chain = []
+      let cursor = id
+      let guard = 0
+      while (cursor && map.has(cursor) && guard < 50) {
+        const folder = map.get(cursor)
+        chain.unshift(folder)
+        cursor = folder.parentId
+        guard += 1
+      }
+      return chain
+    }
+
+    function childFoldersOf(parentId) {
+      return readState()
+        .folders.filter((folder) => (folder.parentId || null) === (parentId || null))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    }
+
+    function createFolder(name, parentId) {
+      const clean = String(name || '').trim().slice(0, 40)
+      if (!clean) return { error: 'empty' }
+      const current = readState()
+      const parent = parentId && current.folders.some((folder) => folder.id === parentId) ? parentId : null
+      if (current.folders.some((folder) => folder.name === clean && (folder.parentId || null) === parent)) {
+        return { error: 'dup' }
+      }
+      const folder = { id: newId(), name: clean, parentId: parent, createdAt: Date.now() }
+      if (!writeState({ items: current.items, folders: [...current.folders, folder] })) return { error: 'failed' }
+      return { folder }
+    }
+
+    function renameFolder(id, name) {
+      const clean = String(name || '').trim().slice(0, 40)
+      if (!clean) return { error: 'empty' }
+      const current = readState()
+      const folder = current.folders.find((item) => item.id === id)
+      if (!folder) return { error: 'missing' }
+      const clash = current.folders.some(
+        (item) => item.id !== id && item.name === clean && (item.parentId || null) === (folder.parentId || null),
+      )
+      if (clash) return { error: 'dup' }
+      const folders = current.folders.map((item) => (item.id === id ? { ...item, name: clean } : item))
+      return writeState({ items: current.items, folders }) ? { folder: { ...folder, name: clean } } : { error: 'failed' }
+    }
+
+    // Deleting a folder never deletes content: items and child folders move one level up.
+    function deleteFolder(id) {
+      const current = readState()
+      const folder = current.folders.find((item) => item.id === id)
+      if (!folder) return false
+      const parent = folder.parentId || null
+      const folders = current.folders
+        .filter((item) => item.id !== id)
+        .map((item) => (item.parentId === id ? { ...item, parentId: parent } : item))
+      const items = current.items.map((item) =>
+        item.folderId === id ? { ...item, folderId: parent } : item,
+      )
+      return writeState({ items, folders })
+    }
+
+    function moveFolder(id, parentId) {
+      const current = readState()
+      const target = parentId || null
+      if (id === target) return false
+      if (target && !current.folders.some((folder) => folder.id === target)) return false
+      let cursor = target
+      let guard = 0
+      while (cursor && guard < 50) {
+        if (cursor === id) return false
+        const folder = current.folders.find((item) => item.id === cursor)
+        cursor = folder ? folder.parentId : null
+        guard += 1
+      }
+      const folders = current.folders.map((folder) =>
+        folder.id === id ? { ...folder, parentId: target } : folder,
+      )
+      return writeState({ items: current.items, folders })
+    }
+
+    // Import accepts every shape this plugin has ever exported, merges folders by (parent, name)
+    // so importing twice does not grow duplicates, and reports what actually landed.
+    function mergeImport(payload) {
+      const current = readState()
+      const source = Array.isArray(payload)
+        ? payload
+        : payload && Array.isArray(payload.items)
+          ? payload.items
+          : payload && Array.isArray(payload.assets)
+            ? payload.assets
+            : null
+      if (!source) return { added: 0, failed: true }
+      const folderSource = Array.isArray(payload && payload.folders) ? payload.folders : []
+      const folders = current.folders.slice()
+      const idMap = new Map()
+      const pending = folderSource.map(normalizeFolder).filter(Boolean)
+      let guard = 0
+      while (pending.length && guard < 500) {
+        guard += 1
+        let progress = false
+        for (const folder of pending.slice()) {
+          const localParent = folder.parentId
+          const parentReady = !localParent || !pending.some((item) => item.id === localParent) || idMap.has(localParent)
+          // A parent that is missing from the file entirely is treated as the root.
+          if (!parentReady) continue
+          const parentId = localParent ? idMap.get(localParent) || null : null
+          const hit = folders.find((item) => item.name === folder.name && (item.parentId || null) === parentId)
+          const target = hit || { id: newId(), name: folder.name, parentId, createdAt: Date.now() }
+          if (!hit) folders.push(target)
+          idMap.set(folder.id, target.id)
+          pending.splice(pending.indexOf(folder), 1)
+          progress = true
+        }
+        if (!progress) {
+          for (const folder of pending) {
+            folders.push({ id: newId(), name: folder.name, parentId: null, createdAt: Date.now() })
+          }
+          pending.length = 0
+        }
+      }
+      const items = current.items.slice()
+      let added = 0
+      for (const raw of source) {
+        const item = normalizeItem(raw)
+        if (!item) continue
+        if (items.some((x) => x.code === item.code && x.lang === item.lang && x.kind === item.kind)) continue
+        const mapped = item.folderId ? idMap.get(item.folderId) || null : null
+        items.push({ ...item, folderId: mapped })
+        added += 1
+      }
+      if (!added && !pending.length) return { added: 0, failed: false }
+      return { added, failed: !writeState({ items, folders }) }
     }
 
     // ------------------------------------------------------- composer delivery
@@ -990,12 +1318,60 @@ window.__ModuleLoader__.load({
       })
     }
 
+    // Extra styles for the folder + draft layout, kept next to the components that use them.
+    Object.assign(styles, {
+      tabs: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' },
+      tab: { font: 'inherit', cursor: 'pointer', border: '1px solid transparent', background: 'transparent', color: 'var(--dsw-alias-label-secondary)', borderRadius: 8, padding: '3px 10px', fontSize: 13 },
+      tabOn: { color: 'var(--dsw-alias-label-primary)', background: 'var(--dsw-alias-bg-layer-2)', border: '1px solid var(--dsw-alias-border-l2)', fontWeight: 600 },
+      tabsHint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)', marginLeft: 4 },
+      split: { display: 'flex', gap: 12, alignItems: 'flex-start' },
+      tree: { width: 208, flex: '0 0 208px', display: 'flex', flexDirection: 'column', gap: 1, borderRight: '1px solid var(--dsw-alias-border-l2)', paddingRight: 10, minHeight: 120 },
+      treeRow: { display: 'flex', alignItems: 'center', gap: 3, borderRadius: 8, padding: '4px 6px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)', border: '1px solid transparent' },
+      treeRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      treeRowDrop: { border: '1px dashed var(--dsw-alias-brand-primary)', background: 'var(--dsw-alias-bg-layer-2)' },
+      treeChev: { width: 16, height: 16, lineHeight: '14px', textAlign: 'center', fontSize: 10, color: 'var(--dsw-alias-label-tertiary)', border: 0, background: 'transparent', cursor: 'pointer', padding: 0, flex: '0 0 16px' },
+      treeName: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      treeCount: { marginLeft: 'auto', fontSize: 11, color: 'var(--dsw-alias-label-tertiary)', fontVariantNumeric: 'tabular-nums' },
+      treeSep: { height: 1, background: 'var(--dsw-alias-border-l2)', margin: '4px 2px' },
+      main: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 },
+      crumbRow: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', minHeight: 22 },
+      crumb: { font: 'inherit', cursor: 'pointer', border: 0, background: 'transparent', color: 'var(--dsw-alias-label-secondary)', padding: 0, fontSize: 12 },
+      crumbOn: { color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      crumbSep: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 11 },
+      cardFoot: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+      moreRow: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', paddingTop: 2, borderTop: '1px dashed var(--dsw-alias-border-l2)', marginTop: 2 },
+      folderBadge: { fontSize: 11, color: 'var(--dsw-alias-label-tertiary)', background: 'var(--dsw-alias-bg-layer-2)', borderRadius: 999, padding: '1px 7px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      draftRow: { border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 10, padding: 10, background: 'var(--dsw-alias-bg-layer-1)', display: 'flex', flexDirection: 'column', gap: 5 },
+      moveList: { display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 220, overflow: 'auto', border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 8, padding: 3 },
+      moveRow: { display: 'flex', alignItems: 'center', gap: 6, borderRadius: 6, padding: '4px 6px', cursor: 'pointer', fontSize: 13, color: 'var(--dsw-alias-label-secondary)' },
+      moveRowOn: { background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontWeight: 600 },
+      editArea: { width: '100%', boxSizing: 'border-box', minHeight: 150, resize: 'vertical', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.5, padding: 8, borderRadius: 8, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-base)', color: 'var(--dsw-alias-label-primary)' },
+      hint: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
+      folderBar: { display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' },
+    })
+
+    function folderLabelText(folders, folderId) {
+      if (!folderId) return ''
+      const chain = []
+      let cursor = folderId
+      let guard = 0
+      while (cursor && guard < 50) {
+        const folder = folders.find((item) => item.id === cursor)
+        if (!folder) break
+        chain.unshift(folder.name)
+        cursor = folder.parentId
+        guard += 1
+      }
+      return chain.join(' / ')
+    }
+
     function AssetCard(props) {
       const dict = t()
       const asset = props.asset
       const selectable = Boolean(props.selectable)
       const selected = Boolean(props.selected)
       const [flash, setFlash] = React.useState('')
+      const [more, setMore] = React.useState(false)
       const flashTimer = React.useRef(0)
       React.useEffect(() => () => window.clearTimeout(flashTimer.current), [])
 
@@ -1043,6 +1419,7 @@ window.__ModuleLoader__.load({
           : null,
         h('span', { style: styles.cardTitle, title: asset.title }, asset.title),
         asset.lang ? h('span', { style: styles.meta }, asset.lang) : null,
+        props.folderLabel ? h('span', { style: styles.folderBadge, title: props.folderLabel }, props.folderLabel) : null,
         h('span', { style: { ...styles.meta, marginLeft: 'auto' } }, formatDate(asset.createdAt)),
       )
 
@@ -1079,7 +1456,17 @@ window.__ModuleLoader__.load({
 
       return h(
         'div',
-        { style: styles.card },
+        {
+          style: styles.card,
+          draggable: true,
+          title: dict.dragHint,
+          onDragStart: (event) => {
+            try {
+              event.dataTransfer.setData('text/plain', asset.id)
+              event.dataTransfer.effectAllowed = 'move'
+            } catch {}
+          },
+        },
         head,
         body,
         h(
@@ -1098,9 +1485,185 @@ window.__ModuleLoader__.load({
             backToConversation()
             requestInsert(asset.code, (ok) => say(ok ? dict.inserted : dict.noSession))
           }),
+          button(`${more ? dict.less : dict.more} ▾`, () => setMore(!more), {
+            title: dict.more,
+            'aria-expanded': more,
+          }),
+        ),
+        more
+          ? h(
+              'div',
+              { style: styles.moreRow },
+              button(dict.edit, () => props.onEdit(asset.id)),
+              button(dict.move, () => props.onMove([asset.id])),
+              h('span', { style: { flex: 1 } }),
+              button(dict.remove, () => props.onAskRemove(asset.id), { danger: true }),
+            )
+          : null,
+      )
+    }
+
+    function DraftRow(props) {
+      const dict = t()
+      const asset = props.asset
+      const [flash, setFlash] = React.useState('')
+      const flashTimer = React.useRef(0)
+      React.useEffect(() => () => window.clearTimeout(flashTimer.current), [])
+      const say = (text) => {
+        setFlash(text)
+        window.clearTimeout(flashTimer.current)
+        flashTimer.current = window.setTimeout(() => setFlash(''), 1200)
+      }
+      const preview = previewOf(asset)
+      const head = h(
+        'div',
+        { style: styles.cardHead },
+        props.selectable
+          ? h(
+              'span',
+              { style: props.selected ? { ...styles.check, ...styles.checkOn } : styles.check, 'aria-hidden': true },
+              props.selected ? '✓' : '',
+            )
+          : null,
+        h('span', { style: styles.cardTitle, title: asset.title }, asset.title),
+        h('span', { style: { ...styles.meta, marginLeft: 'auto' } }, formatDate(asset.createdAt)),
+      )
+      const body = h('pre', { style: styles.pre }, preview.length > 900 ? `${preview.slice(0, 900)}\n…` : preview)
+      if (props.selectable) {
+        return h(
+          'div',
+          {
+            style: props.selected ? { ...styles.draftRow, ...styles.cardSelected, cursor: 'pointer' } : { ...styles.draftRow, cursor: 'pointer' },
+            role: 'checkbox',
+            'aria-checked': props.selected,
+            'aria-label': asset.title,
+            tabIndex: 0,
+            onClick: () => props.onToggle(asset.id),
+            onKeyDown: (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                props.onToggle(asset.id)
+              }
+            },
+          },
+          head,
+          body,
+        )
+      }
+      return h(
+        'div',
+        { style: styles.draftRow },
+        head,
+        body,
+        h(
+          'div',
+          { style: styles.cardFoot },
+          flash ? h('span', { style: { ...styles.meta, color: 'var(--dsw-alias-state-success-primary)' } }, flash) : null,
+          h('span', { style: { flex: 1 } }),
+          button(dict.insert, () => {
+            backToConversation()
+            requestInsert(asset.code, (ok) => say(ok ? dict.inserted : dict.noSession))
+          }),
+          button(dict.toFavorites, () => props.onMove(asset.id)),
+          button(dict.edit, () => props.onEdit(asset.id)),
           button(dict.remove, () => props.onAskRemove(asset.id), { danger: true }),
         ),
       )
+    }
+
+    // A plain recursive list instead of a tree widget: folders read top-down, the chevron only
+    // shows when there is something to unfold, and every row is a drop target for a card.
+    function FolderTree(props) {
+      const dict = t()
+      const children = new Map()
+      for (const folder of props.folders) {
+        const key = folder.parentId || ''
+        if (!children.has(key)) children.set(key, [])
+        children.get(key).push(folder)
+      }
+      for (const list of children.values()) list.sort((a, b) => a.name.localeCompare(b.name))
+
+      const rows = []
+      const row = (key, label, count, depth, opts) => {
+        const active = props.current === key
+        const drop = props.dragOver === key
+        const style = { ...styles.treeRow, paddingLeft: 4 + depth * 12 }
+        if (active) Object.assign(style, styles.treeRowOn)
+        if (drop) Object.assign(style, styles.treeRowDrop)
+        return h(
+          'div',
+          {
+            key,
+            style,
+            role: 'treeitem',
+            'aria-selected': active,
+            tabIndex: 0,
+            title: label,
+            onClick: () => props.onSelect(key),
+            onKeyDown: (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                props.onSelect(key)
+              }
+            },
+            onDragOver: (event) => {
+              if (!opts.droppable) return
+              event.preventDefault()
+              props.onDragOver(key)
+            },
+            onDragLeave: () => {
+              if (opts.droppable && props.dragOver === key) props.onDragOver(null)
+            },
+            onDrop: (event) => {
+              if (!opts.droppable) return
+              event.preventDefault()
+              props.onDragOver(null)
+              props.onDrop(event, key)
+            },
+          },
+          opts.toggle
+            ? h(
+                'button',
+                {
+                  type: 'button',
+                  style: styles.treeChev,
+                  title: dict.folderName,
+                  'aria-hidden': true,
+                  onClick: (event) => {
+                    event.stopPropagation()
+                    props.onToggle(key)
+                  },
+                },
+                props.expanded.includes(key) ? '▾' : '▸',
+              )
+            : h('span', { style: { ...styles.treeChev, visibility: 'hidden' } }, '▸'),
+          h('span', { style: styles.treeName }, label),
+          h('span', { style: styles.treeCount }, String(count || 0)),
+        )
+      }
+
+      const walk = (parentId, depth) => {
+        for (const folder of children.get(parentId) || []) {
+          const kids = children.get(folder.id) || []
+          rows.push(
+            row(folder.id, folder.name, props.counts.get(folder.id), depth, {
+              droppable: true,
+              toggle: kids.length > 0,
+            }),
+          )
+          if (kids.length && props.expanded.includes(folder.id)) walk(folder.id, depth + 1)
+        }
+      }
+
+      walk('', 0)
+
+      const list = [
+        row('all', dict.allItems, props.snippetCount, 0, { droppable: false, toggle: false }),
+        ...rows,
+      ]
+      list.push(h('div', { key: 'sep', style: styles.treeSep, 'aria-hidden': true }))
+      list.push(row('unfiled', dict.unfiled, props.unfiledCount, 0, { droppable: true, toggle: false }))
+      return h('div', { style: styles.tree, role: 'tree', 'aria-label': dict.favorites }, list)
     }
 
     function HelpBlock(props) {
@@ -1121,18 +1684,28 @@ window.__ModuleLoader__.load({
     function Panel() {
       const dict = t()
       const [items, setItems] = React.useState(() => readAll().slice())
+      const [folders, setFolders] = React.useState(() => readState().folders.slice())
+      const [tab, setTab] = React.useState('favorites')
+      const [current, setCurrent] = React.useState('all')
+      const [expanded, setExpanded] = React.useState([])
       const [query, setQuery] = React.useState('')
       const [langFilter, setLangFilter] = React.useState('')
       const [helpOpen, setHelpOpen] = React.useState(() => readAll().length === 0)
-      const fileRef = React.useRef(null)
       const [notice, setNotice] = React.useState('')
       const [noticeError, setNoticeError] = React.useState(false)
       const noticeTimer = React.useRef(0)
+      const fileRef = React.useRef(null)
       const [selectMode, setSelectMode] = React.useState(false)
       const [selected, setSelected] = React.useState([])
       const [dialog, setDialog] = React.useState(null)
+      const [dialogError, setDialogError] = React.useState('')
       const [tagDraft, setTagDraft] = React.useState('')
       const [mergeTitle, setMergeTitle] = React.useState('')
+      const [nameDraft, setNameDraft] = React.useState('')
+      const [editTitle, setEditTitle] = React.useState('')
+      const [editCode, setEditCode] = React.useState('')
+      const [movePick, setMovePick] = React.useState('root')
+      const [dragOver, setDragOver] = React.useState(null)
 
       const announce = (text, error) => {
         setNotice(text)
@@ -1142,7 +1715,14 @@ window.__ModuleLoader__.load({
       }
       React.useEffect(() => () => window.clearTimeout(noticeTimer.current), [])
 
-      React.useEffect(() => subscribe(() => setItems(readAll().slice())), [])
+      React.useEffect(
+        () =>
+          subscribe(() => {
+            setItems(readAll().slice())
+            setFolders(readState().folders.slice())
+          }),
+        [],
+      )
 
       // Selection lives by id: entries removed here, in another tab, or by an import silently
       // drop out instead of leaving a phantom count behind.
@@ -1153,20 +1733,52 @@ window.__ModuleLoader__.load({
         })
       }, [items])
 
+      // A folder can disappear (deleted here or in another tab); fall back to the full list.
+      React.useEffect(() => {
+        if (current === 'all' || current === 'unfiled') return
+        if (!folders.some((folder) => folder.id === current)) setCurrent('all')
+      }, [folders, current])
+
+      const snippets = items.filter((item) => item.kind === 'snippet')
+      const drafts = items.filter((item) => item.kind === 'draft')
+      const tabItems = tab === 'drafts' ? drafts : snippets
+      const needle = query.trim().toLowerCase()
+      const searching = needle !== ''
+      const within = (item) => {
+        if (searching) return true
+        if (current === 'all') return true
+        if (current === 'unfiled') return !item.folderId
+        return item.folderId === current
+      }
+      const view = tabItems.filter(
+        (item) =>
+          within(item) &&
+          (!langFilter || item.lang === langFilter) &&
+          (!searching || searchTextOf(item).includes(needle)),
+      )
+
       const langs = []
-      for (const item of items) {
+      for (const item of tabItems) {
         if (item.lang && !langs.includes(item.lang)) langs.push(item.lang)
       }
       langs.sort()
 
-      const needle = query.trim().toLowerCase()
-      const view = items.filter((item) => {
-        if (langFilter && item.lang !== langFilter) return false
-        if (!needle) return true
-        return searchTextOf(item).includes(needle)
-      })
+      // Folder badges count every snippet underneath, so a parent folder answers "how much is in
+      // here" without unfolding it.
+      const counts = new Map()
+      for (const item of snippets) {
+        let cursor = item.folderId
+        const seen = new Set()
+        while (cursor && !seen.has(cursor)) {
+          seen.add(cursor)
+          counts.set(cursor, (counts.get(cursor) || 0) + 1)
+          const folder = folders.find((entry) => entry.id === cursor)
+          cursor = folder ? folder.parentId : null
+        }
+      }
+      const unfiledCount = snippets.filter((item) => !item.folderId).length
 
-      const selectedItems = items.filter((item) => selected.includes(item.id))
+      const selectedItems = tabItems.filter((item) => selected.includes(item.id))
       const selectedIds = selectedItems.map((item) => item.id)
       const toggleSelect = (id) =>
         setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -1174,12 +1786,22 @@ window.__ModuleLoader__.load({
         setSelectMode(false)
         setSelected([])
         setDialog(null)
+        setDialogError('')
         setTagDraft('')
+      }
+      const switchTab = (next) => {
+        if (next === tab) return
+        setTab(next)
+        setCurrent('all')
+        setLangFilter('')
+        exitSelect()
       }
 
       const exportAll = () => {
         try {
-          const blob = new Blob([JSON.stringify({ version: 1, assets: items }, null, 2)], { type: 'application/json' })
+          const blob = new Blob([JSON.stringify({ version: 3, items, folders }, null, 2)], {
+            type: 'application/json',
+          })
           const url = URL.createObjectURL(blob)
           const link = document.createElement('a')
           link.href = url
@@ -1195,12 +1817,10 @@ window.__ModuleLoader__.load({
         const reader = new FileReader()
         reader.onload = () => {
           try {
-            const data = JSON.parse(String(reader.result))
-            const list = Array.isArray(data) ? data : data && Array.isArray(data.assets) ? data.assets : null
-            if (!list) throw new Error('shape')
-            const added = mergeAssets(list)
-            if (added < 0) announce(dict.storeFailed, true)
-            else announce(added > 0 ? dict.imported(added) : dict.importNone)
+            const result = mergeImport(JSON.parse(String(reader.result)))
+            if (result.failed && !result.added) announce(dict.importFailed, true)
+            else if (result.failed) announce(dict.storeFailed, true)
+            else announce(result.added > 0 ? dict.imported(result.added) : dict.importNone)
           } catch {
             announce(dict.importFailed, true)
           }
@@ -1224,21 +1844,20 @@ window.__ModuleLoader__.load({
 
       const askDelete = (ids) => {
         if (!ids.length) return announce(dict.selectedEmpty, true)
+        setDialogError('')
         setDialog({ kind: 'delete', ids: ids.slice() })
       }
 
       const runDelete = (ids) => {
-        let failed = 0
-        for (const id of ids) {
-          if (!removeAsset(id)) failed += 1
-        }
+        const ok = removeItems(ids)
         setDialog(null)
         setSelected((prev) => prev.filter((id) => !ids.includes(id)))
-        announce(failed ? dict.storeFailed : dict.removed, Boolean(failed))
+        announce(ok ? dict.removed : dict.storeFailed, !ok)
       }
 
       const openMerge = () => {
         if (selectedItems.length < 2) return announce(dict.selectedEmpty, true)
+        setDialogError('')
         setMergeTitle(defaultMergeTitle(selectedItems))
         setDialog({ kind: 'merge' })
       }
@@ -1257,7 +1876,8 @@ window.__ModuleLoader__.load({
           for (const tag of item.tags) if (!tags.includes(tag)) tags.push(tag)
         }
         const title = mergeTitle.trim() || defaultMergeTitle(selectedItems)
-        const added = addAsset({ title, lang: 'markdown', code: mergedCode, tags })
+        const folderId = current !== 'all' && current !== 'unfiled' ? current : null
+        const added = addAsset({ title, lang: 'markdown', code: mergedCode, tags, folderId })
         setDialog(null)
         if (!added) return announce(dict.mergeFailed, true)
         setSelected([])
@@ -1274,10 +1894,103 @@ window.__ModuleLoader__.load({
         let failed = 0
         for (const item of selectedItems) {
           const next = item.tags.includes(tag) ? item.tags : [...item.tags, tag]
-          if (patchAsset(item.id, { tags: next })) applied += 1
+          if (updateItem(item.id, { tags: next })) applied += 1
           else failed += 1
         }
         announce(failed ? dict.storeFailed : dict.tagged(applied), Boolean(failed))
+      }
+
+      const openMove = (ids) => {
+        if (!ids.length) return announce(dict.selectedEmpty, true)
+        const first = items.find((item) => item.id === ids[0])
+        setMovePick(first && first.folderId ? first.folderId : 'root')
+        setDialogError('')
+        setDialog({ kind: 'move', ids: ids.slice(), promote: tab === 'drafts' })
+      }
+
+      const runMove = () => {
+        const ids = dialog && dialog.ids ? dialog.ids : []
+        const promote = Boolean(dialog && dialog.promote)
+        const folderId = movePick === 'root' ? null : movePick
+        const ok = promote ? promoteItems(ids, folderId) : moveItems(ids, folderId)
+        setDialog(null)
+        if (!ok) return announce(dict.moveFailed, true)
+        setSelectMode(false)
+        setSelected([])
+        announce(promote ? dict.draftMoved(ids.length) : dict.moved(ids.length))
+      }
+
+      const openEdit = (id) => {
+        const item = items.find((entry) => entry.id === id)
+        if (!item) return
+        setEditTitle(item.title)
+        setEditCode(item.code)
+        setDialogError('')
+        setDialog({ kind: 'edit', id })
+      }
+
+      const runEdit = () => {
+        const id = dialog && dialog.id
+        if (!editCode.trim()) {
+          setDialogError(dict.editFailed)
+          return
+        }
+        const ok = updateItem(id, { title: editTitle.trim() || titleOf(editCode), code: editCode })
+        setDialog(null)
+        announce(ok ? dict.editSaved : dict.editFailed, !ok)
+      }
+
+      const openFolderCreate = (parentId) => {
+        setNameDraft('')
+        setDialogError('')
+        setDialog({ kind: 'folder', mode: 'create', parentId: parentId || null })
+      }
+
+      const openFolderRename = () => {
+        const folder = folders.find((entry) => entry.id === current)
+        if (!folder) return
+        setNameDraft(folder.name)
+        setDialogError('')
+        setDialog({ kind: 'folder', mode: 'rename', id: folder.id })
+      }
+
+      const submitFolderName = () => {
+        const name = nameDraft.trim()
+        if (!name) return
+        const result =
+          dialog.mode === 'rename'
+            ? renameFolder(dialog.id, name)
+            : createFolder(name, dialog.parentId || null)
+        if (result.error) {
+          setDialogError(result.error === 'dup' ? dict.folderExists : dict.folderFailed)
+          return
+        }
+        const created = result.folder
+        setDialog(null)
+        setDialogError('')
+        if (created && dialog.mode !== 'rename' && created.parentId) {
+          setExpanded((prev) => (prev.includes(created.parentId) ? prev : [...prev, created.parentId]))
+        }
+        announce(dialog.mode === 'rename' ? dict.folderRenamed : dict.folderCreated)
+      }
+
+      const runDeleteFolder = () => {
+        const ok = deleteFolder(dialog.id)
+        setDialog(null)
+        if (!ok) return announce(dict.folderFailed, true)
+        setCurrent('all')
+        announce(dict.removed)
+      }
+
+      const dropOnFolder = (event, key) => {
+        let id = ''
+        try {
+          id = event.dataTransfer.getData('text/plain')
+        } catch {}
+        if (!id) return
+        const folderId = key === 'unfiled' ? null : key
+        const ok = moveItems([id], folderId)
+        announce(ok ? dict.moved(1) : dict.moveFailed, !ok)
       }
 
       // ----------------------------------------------------------------- chrome
@@ -1286,7 +1999,7 @@ window.__ModuleLoader__.load({
         'div',
         { style: styles.titleRow },
         h('h2', { style: styles.title }, dict.title),
-        h('span', { style: styles.badge }, dict.count(items.length)),
+        h('span', { style: styles.badge }, dict.count(snippets.length)),
         h(
           'div',
           { style: styles.headRight },
@@ -1306,6 +2019,20 @@ window.__ModuleLoader__.load({
         ),
       )
 
+      const tabs = h(
+        'div',
+        { style: styles.tabs, role: 'tablist' },
+        button(`${dict.favorites} · ${snippets.length}`, () => switchTab('favorites'), {
+          primary: tab === 'favorites',
+          title: dict.favoritesHint,
+        }),
+        button(`${dict.drafts} · ${drafts.length}`, () => switchTab('drafts'), {
+          primary: tab === 'drafts',
+          title: dict.draftsHint,
+        }),
+        h('span', { style: styles.tabsHint }, tab === 'drafts' ? dict.draftsHint : dict.favoritesHint),
+      )
+
       const toolbar = h(
         'div',
         { style: styles.toolbar },
@@ -1318,7 +2045,12 @@ window.__ModuleLoader__.load({
         button(selectMode ? dict.exitSelect : dict.select, () => {
           if (selectMode) exitSelect()
           else setSelectMode(true)
-        }, { disabled: items.length === 0 }),
+        }, { disabled: tabItems.length === 0 }),
+        tab === 'favorites'
+          ? button(dict.newFolder, () =>
+              openFolderCreate(current !== 'all' && current !== 'unfiled' ? current : null),
+            )
+          : null,
         button(dict.export, exportAll, { disabled: items.length === 0 }),
         button(dict.import, () => fileRef.current && fileRef.current.click()),
         h('input', {
@@ -1347,8 +2079,19 @@ window.__ModuleLoader__.load({
             button(dict.clearSelection, () => setSelected([]), { disabled: !selected.length }),
             h('span', { style: { flex: 1 } }),
             button(dict.batchCopy, copySelected, { disabled: !selectedItems.length }),
-            button(dict.batchTag, () => setDialog({ kind: 'tag' }), { disabled: !selectedItems.length }),
-            button(dict.merge, openMerge, { disabled: selectedItems.length < 2 }),
+            tab === 'favorites'
+              ? button(dict.batchTag, () => {
+                  setDialogError('')
+                  setTagDraft('')
+                  setDialog({ kind: 'tag' })
+                }, { disabled: !selectedItems.length })
+              : null,
+            tab === 'favorites'
+              ? button(dict.merge, openMerge, { disabled: selectedItems.length < 2 })
+              : null,
+            button(tab === 'drafts' ? dict.toFavorites : dict.move, () => openMove(selectedIds), {
+              disabled: !selectedItems.length,
+            }),
             button(dict.batchDelete, () => askDelete(selectedIds), {
               disabled: !selectedItems.length,
               danger: true,
@@ -1371,29 +2114,165 @@ window.__ModuleLoader__.load({
           )
         : null
 
-      const body = view.length
+      const noticeNode = notice
         ? h(
-            'div',
-            { style: styles.list },
-            view.map((asset) =>
-              h(AssetCard, {
-                key: asset.id,
-                asset,
-                selectable: selectMode,
-                selected: selected.includes(asset.id),
-                onToggle: toggleSelect,
-                onAskRemove: (id) => askDelete([id]),
-                onTag: (id, tags) => {
-                  if (!patchAsset(id, { tags })) announce(dict.storeFailed, true)
-                },
-              }),
+            'p',
+            {
+              style: noticeError
+                ? { ...styles.notice, color: 'var(--dsw-alias-state-error-primary)' }
+                : styles.notice,
+            },
+            notice,
+          )
+        : null
+
+      // Breadcrumb doubles as the folder toolbar: the actions act on the folder you are inside.
+      let crumb = null
+      if (tab === 'favorites') {
+        const path = current !== 'all' && current !== 'unfiled' ? folderPathOf(current) : []
+        const parts = [
+          h(
+            'button',
+            {
+              key: 'all',
+              type: 'button',
+              style: current === 'all' ? { ...styles.crumb, ...styles.crumbOn } : styles.crumb,
+              onClick: () => setCurrent('all'),
+            },
+            dict.allItems,
+          ),
+        ]
+        for (const folder of path) {
+          parts.push(h('span', { key: `sep-${folder.id}`, style: styles.crumbSep }, '›'))
+          parts.push(
+            h(
+              'button',
+              {
+                key: folder.id,
+                type: 'button',
+                style: folder.id === current ? { ...styles.crumb, ...styles.crumbOn } : styles.crumb,
+                onClick: () => setCurrent(folder.id),
+              },
+              folder.name,
             ),
           )
-        : items.length || query.trim()
-          ? h('p', { style: styles.empty }, dict.searchEmpty)
-          : helpOpen
-            ? null
-            : h('p', { style: styles.empty }, dict.empty)
+        }
+        if (current === 'unfiled') {
+          parts.push(h('span', { key: 'sep-unfiled', style: styles.crumbSep }, '›'))
+          parts.push(h('span', { key: 'unfiled', style: { ...styles.crumb, ...styles.crumbOn } }, dict.unfiled))
+        }
+        if (searching) parts.push(h('span', { key: 'search', style: styles.hint }, `· ${dict.searchInAll}`))
+        const real = current !== 'all' && current !== 'unfiled'
+        parts.push(
+          h(
+            'div',
+            { key: 'actions', style: styles.folderBar },
+            real
+              ? button(dict.renameFolder, openFolderRename)
+              : null,
+            real ? button(dict.newFolder, () => openFolderCreate(current)) : null,
+            real ? button(dict.deleteFolder, () => {
+              setDialogError('')
+              setDialog({ kind: 'folderDelete', id: current })
+            }, { danger: true }) : null,
+          ),
+        )
+        crumb = h('div', { style: styles.crumbRow }, parts)
+      }
+
+      const folderLabelFor = (item) =>
+        searching && item.folderId ? folderLabelText(folders, item.folderId) : ''
+
+      const favoritesBody = h(
+        'div',
+        { style: styles.split },
+        h(FolderTree, {
+          folders,
+          counts,
+          current,
+          expanded,
+          dragOver,
+          snippetCount: snippets.length,
+          unfiledCount,
+          onSelect: (key) => {
+            setCurrent(key)
+            if (key !== 'all' && key !== 'unfiled') {
+              setExpanded((prev) => (prev.includes(key) ? prev : [...prev, key]))
+            }
+          },
+          onToggle: (key) =>
+            setExpanded((prev) => (prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key])),
+          onDragOver: setDragOver,
+          onDrop: dropOnFolder,
+        }),
+        h(
+          'div',
+          { style: styles.main },
+          crumb,
+          chips,
+          view.length
+            ? h(
+                'div',
+                { style: styles.list },
+                view.map((asset) =>
+                  h(AssetCard, {
+                    key: asset.id,
+                    asset,
+                    selectable: selectMode,
+                    selected: selected.includes(asset.id),
+                    folderLabel: folderLabelFor(asset),
+                    onToggle: toggleSelect,
+                    onAskRemove: (id) => askDelete([id]),
+                    onEdit: openEdit,
+                    onMove: openMove,
+                    onTag: (id, tags) => {
+                      if (!updateItem(id, { tags })) announce(dict.storeFailed, true)
+                    },
+                  }),
+                ),
+              )
+            : searching || langFilter
+              ? h('p', { style: styles.empty }, dict.searchEmpty)
+              : current === 'all' || current === 'unfiled'
+                ? snippets.length
+                  ? h('p', { style: styles.empty }, dict.searchEmpty)
+                  : helpOpen
+                    ? null
+                    : h('p', { style: styles.empty }, dict.empty)
+                : h(
+                    'div',
+                    { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                    h('p', { style: styles.empty }, dict.folderEmpty),
+                    h('p', { style: styles.hint }, dict.folderEmptyHint),
+                  ),
+        ),
+      )
+
+      const draftsBody = h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        chips,
+        view.length
+          ? h(
+              'div',
+              { style: styles.list },
+              view.map((asset) =>
+                h(DraftRow, {
+                  key: asset.id,
+                  asset,
+                  selectable: selectMode,
+                  selected: selected.includes(asset.id),
+                  onToggle: toggleSelect,
+                  onAskRemove: (id) => askDelete([id]),
+                  onEdit: openEdit,
+                  onMove: (id) => openMove([id]),
+                }),
+              ),
+            )
+          : h('p', { style: styles.empty }, searching || langFilter ? dict.searchEmpty : dict.draftsEmpty),
+      )
+
+      // Dialogs -----------------------------------------------------------------
 
       let dialogNode = null
       if (dialog && dialog.kind === 'delete') {
@@ -1466,6 +2345,116 @@ window.__ModuleLoader__.load({
           ),
           mergedTooLong ? h('p', { style: styles.dialogError }, dict.mergeFailed) : null,
         )
+      } else if (dialog && dialog.kind === 'move') {
+        const pickRow = (id, label, depth) =>
+          h(
+            'div',
+            {
+              key: id,
+              style: movePick === id ? { ...styles.moveRow, ...styles.moveRowOn, paddingLeft: 6 + depth * 12 } : { ...styles.moveRow, paddingLeft: 6 + depth * 12 },
+              role: 'radio',
+              'aria-checked': movePick === id,
+              tabIndex: 0,
+              onClick: () => setMovePick(id),
+              onKeyDown: (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setMovePick(id)
+                }
+              },
+            },
+            label,
+          )
+        const rows = [pickRow('root', dict.moveRoot, 0)]
+        const walkMove = (parentId, depth) => {
+          const list = folders
+            .filter((folder) => (folder.parentId || null) === (parentId || null))
+            .sort((a, b) => a.name.localeCompare(b.name))
+          for (const folder of list) {
+            rows.push(pickRow(folder.id, folder.name, depth))
+            walkMove(folder.id, depth + 1)
+          }
+        }
+        walkMove(null, 1)
+        dialogNode = h(
+          Dialog,
+          {
+            title: dialog.promote ? dict.toFavorites : dict.moveTitle,
+            confirmLabel: dict.move,
+            onCancel: () => setDialog(null),
+            onConfirm: runMove,
+          },
+          h('p', { style: styles.dialogText }, dict.moveHint),
+          h('div', { style: styles.moveList, role: 'radiogroup' }, rows),
+          h('p', { style: styles.meta }, dict.selectedCount(dialog.ids.length)),
+        )
+      } else if (dialog && dialog.kind === 'folder') {
+        dialogNode = h(
+          Dialog,
+          {
+            title: dialog.mode === 'rename' ? dict.renameFolder : dict.newFolder,
+            confirmLabel: dialog.mode === 'rename' ? dict.saveChanges : dict.create,
+            disabled: !nameDraft.trim(),
+            onCancel: () => setDialog(null),
+            onConfirm: submitFolderName,
+          },
+          h('p', { style: styles.dialogText }, dialog.mode === 'rename' ? dict.folderName : dict.folderNamePlaceholder),
+          h('input', {
+            autoFocus: true,
+            value: nameDraft,
+            placeholder: dict.folderNamePlaceholder,
+            onChange: (e) => {
+              setNameDraft(e.target.value)
+              if (dialogError) setDialogError('')
+            },
+            onKeyDown: (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                if (nameDraft.trim()) submitFolderName()
+              }
+            },
+            style: styles.input,
+          }),
+          dialogError ? h('p', { style: styles.dialogError }, dialogError) : null,
+        )
+      } else if (dialog && dialog.kind === 'folderDelete') {
+        const inside = snippets.filter((item) => item.folderId === dialog.id).length
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.folderDeleteTitle,
+            confirmLabel: dict.deleteFolder,
+            danger: true,
+            onCancel: () => setDialog(null),
+            onConfirm: runDeleteFolder,
+          },
+          h('p', { style: styles.dialogText }, dict.folderDeleteText(inside)),
+        )
+      } else if (dialog && dialog.kind === 'edit') {
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.edit,
+            confirmLabel: dict.saveChanges,
+            disabled: !editCode.trim(),
+            onCancel: () => setDialog(null),
+            onConfirm: runEdit,
+          },
+          h('p', { style: styles.meta }, dict.editTitleLabel),
+          h('input', {
+            value: editTitle,
+            onChange: (e) => setEditTitle(e.target.value),
+            style: styles.input,
+          }),
+          h('p', { style: styles.meta }, dict.editCodeLabel),
+          h('textarea', {
+            value: editCode,
+            spellCheck: false,
+            onChange: (e) => setEditCode(e.target.value),
+            style: styles.editArea,
+          }),
+          dialogError ? h('p', { style: styles.dialogError }, dialogError) : null,
+        )
       }
 
       return h(
@@ -1473,26 +2462,21 @@ window.__ModuleLoader__.load({
         { style: styles.root },
         h(
           'div',
-          { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
           head,
           h('p', { style: styles.subtitle }, dict.subtitle),
+          tabs,
         ),
         toolbar,
+        noticeNode,
         selectBar,
-        notice
-          ? h(
-              'p',
-              {
-                style: noticeError
-                  ? { ...styles.notice, color: 'var(--dsw-alias-state-error-primary)' }
-                  : styles.notice,
-              },
-              notice,
-            )
+        tab === 'favorites' ? favoritesBody : draftsBody,
+        helpOpen && tab === 'favorites' && snippets.length === 0
+          ? h(HelpBlock, { onOpenChat: openChat, showTitle: true })
           : null,
-        chips,
-        helpOpen || items.length === 0 ? h(HelpBlock, { onOpenChat: openChat, showTitle: items.length === 0 }) : null,
-        body,
+        helpOpen && tab === 'favorites' && snippets.length > 0
+          ? h(HelpBlock, { onOpenChat: openChat, showTitle: false })
+          : null,
         dialogNode,
       )
     }
@@ -1680,12 +2664,13 @@ window.__ModuleLoader__.load({
       const saveDraft = () => {
         const trimmed = text.trim()
         const code = trimmed.length > MAX_CODE ? trimmed.slice(0, MAX_CODE) : trimmed
-        const before = readAll().length
-        if (!addAsset({ title: titleOf(code), lang: 'text', code })) {
+        const draftCount = () => readAll().filter((item) => item.kind === 'draft').length
+        const before = draftCount()
+        if (!addDraft({ title: titleOf(code), lang: 'text', code })) {
           report(t().saveFailed)
           return
         }
-        report(readAll().length > before ? t().draftSaved : t().draftDup)
+        report(draftCount() > before ? t().draftSaved : t().draftDup)
       }
 
       if (!canSave && !flash) return h('span', { style: { display: 'none' } })
@@ -1740,7 +2725,8 @@ window.__ModuleLoader__.load({
 
       if (!quickOpen) return null
 
-      const all = readAll()
+      // Drafts are scratch text, not something to paste back as code.
+      const all = readAll().filter((item) => item.kind === 'snippet')
       const needle = quickQuery.trim().toLowerCase()
       const hits = (needle ? all.filter((item) => searchTextOf(item).includes(needle)) : all).slice(0, 8)
       const active = hits.length ? Math.min(cursor, hits.length - 1) : 0

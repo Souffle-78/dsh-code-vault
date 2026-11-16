@@ -14,11 +14,15 @@ Keep the code that shows up in a conversation — a shell command, a config file
 4. Click **Select** in the toolbar to batch copy, batch tag or batch delete selected blocks (deleting asks for confirmation first).
 5. With two or more selected, **Merge into new entry** combines them into one new markdown entry in list order — edit the title, check the preview, then confirm.
 6. Press **⌘⇧K** (`Ctrl+Shift+K` on Windows and Linux) anywhere to open the quick-insert overlay: type to search, ↑↓ to choose, Enter to insert, Esc to close.
-7. While a draft is half-written, **Save draft** under the composer stores it as a `text` snippet (saving the same draft twice does not duplicate it).
+7. While a draft is half-written, **Save draft** under the composer sends it to the **Drafts** tab (the second tab at the top), not to the vault; saving the same draft twice does not duplicate it.
+8. Every draft has **Move to vault**: pick a folder and it becomes a normal entry inside that folder.
+9. The tree on the left works like folders on a computer: **New folder** in the toolbar or **New subfolder** on the breadcrumb nests levels, **Rename** renames, and **Delete folder** removes only the folder — its subfolders and entries move up a level.
+10. To reorganise, drag a card onto a folder on the left, or use **More ▾ → Move to…** on the card and pick a target (including **Unsorted**).
 
 ## Notes
 
-- Storage is per browser profile (`localStorage`), capped at 400 entries; one entry holds up to 200 000 characters.
+- Storage is per browser profile (`localStorage`), capped at 400 entries (vault + drafts), 200 folders, and 200 000 characters per entry.
+- Drafts live only in the Drafts tab: they never count as "saved" for chat code blocks and never show up in quick insert.
 - Saving the same code twice does not create a duplicate; an already saved block keeps showing **Saved ✓** long after the reply, including after a reload.
 - The panel can switch between 中文 and English independently of the DSH UI language.
 - Drafts are stored with the `text` language and behave like any other entry: searchable, copyable, insertable.
