@@ -128,6 +128,10 @@ window.__ModuleLoader__.load({
         shortcutDefault: 'Use default',
         shortcutNote: 'Only affects quick insert. The default is ⌘⇧K.',
         changeShortcut: 'Change shortcut',
+        guideTitle: 'How it works',
+        gotIt: 'Got it',
+        guideTip: 'Everything stays in this browser. Use Export / Import to move devices.',
+        guideShortcut: (label) => `Quick insert from anywhere: ${label}`,
         toFavorites: 'Move to vault',
         draftMoved: (n) => `Moved ${n} draft(s) to the vault`,
         moved: (n) => `Moved ${n} item(s)`,
@@ -281,6 +285,10 @@ window.__ModuleLoader__.load({
         shortcutDefault: '恢复默认',
         shortcutNote: '只影响快速插入。默认是 ⌘⇧K。',
         changeShortcut: '改快捷键',
+        guideTitle: '用法说明',
+        gotIt: '我明白了',
+        guideTip: '所有内容只存在这台浏览器里，换设备用「导出 / 导入」。',
+        guideShortcut: (label) => `任何地方唤起快速插入：${label}`,
         toFavorites: '移入收藏夹',
         draftMoved: (n) => `已把 ${n} 条草稿移入收藏夹`,
         moved: (n) => `已移动 ${n} 条`,
@@ -1255,6 +1263,10 @@ window.__ModuleLoader__.load({
         color: 'var(--dsw-alias-label-primary)',
       },
       recorderHint: { margin: 0, fontSize: 12, textAlign: 'center', color: 'var(--dsw-alias-label-tertiary)' },
+      guideStep: { margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--dsw-alias-label-primary)' },
+      guideDivider: { height: 1, background: 'var(--dsw-alias-border-l1)', margin: '2px 0' },
+      guideLine: { margin: 0, fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },
+      guideNote: { margin: 0, fontSize: 11, lineHeight: '16px', color: 'var(--dsw-alias-label-tertiary)' },
       preview: {
         margin: 0,
         padding: '8px 10px',
@@ -1951,7 +1963,7 @@ window.__ModuleLoader__.load({
             { style: styles.dialogActions },
             props.left ? props.left : null,
             h('span', { style: { flex: 1 } }),
-            button(dict.cancel, props.onCancel),
+            props.singleAction ? null : button(dict.cancel, props.onCancel),
             button(props.confirmLabel || dict.create, props.onConfirm, {
               primary: true,
               danger: props.danger,
@@ -3006,7 +3018,10 @@ window.__ModuleLoader__.load({
             chip('中文', lang === 'zh', () => setLang('zh')),
             chip('EN', lang === 'en', () => setLang('en')),
           ),
-          button(helpOpen ? dict.hideHow : dict.how, () => setHelpOpen(!helpOpen), { title: dict.how }),
+          button(dict.how, () => {
+            setDialogError('')
+            setDialog({ kind: 'guide' })
+          }, { title: dict.how }),
         ),
       )
 
@@ -3319,6 +3334,31 @@ window.__ModuleLoader__.load({
             onConfirm: () => runDelete(dialog.ids),
           },
           h('p', { style: styles.dialogText }, count > 1 ? dict.confirmDeleteMany(count) : dict.confirmDeleteOne),
+        )
+      } else if (dialog && dialog.kind === 'guide') {
+        const line = (text) => h('p', { style: styles.guideLine }, text)
+        dialogNode = h(
+          Dialog,
+          {
+            title: dict.guideTitle,
+            confirmLabel: dict.gotIt,
+            onCancel: () => setDialog(null),
+            onConfirm: () => setDialog(null),
+            singleAction: true,
+          },
+          h('p', { style: styles.guideStep }, dict.step1),
+          h('p', { style: styles.guideStep }, dict.step2),
+          h('p', { style: styles.guideStep }, dict.step3),
+          h('p', { style: styles.guideStep }, dict.step4),
+          h('div', { style: styles.guideDivider }),
+          line(dict.guideShortcut(shortcutLabel())),
+          line(dict.trashHint),
+          h(
+            'div',
+            { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+            h('p', { style: styles.guideNote }, dict.guideTip),
+            button(dict.changeShortcut, openShortcut, { subtle: true }),
+          ),
         )
       } else if (dialog && dialog.kind === 'shortcut') {
         const conflict = shortDraft ? comboConflictLabel(shortDraft) : ''
