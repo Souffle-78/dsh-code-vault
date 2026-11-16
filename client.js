@@ -1537,37 +1537,40 @@ window.__ModuleLoader__.load({
         ),
         h(
           'div',
+          { style: styles.lintHead },
+          report.total ? h('span', { style: styles.lintCount }, dict.lintCount(report.total)) : null,
+          h('span', { style: styles.hint }, dict.editorHelp),
+        ),
+        h(
+          'div',
           { style: styles.lintBox },
-          report.total > 1 ? h('span', { style: styles.lintCount }, dict.lintCount(report.total)) : null,
-          issues.length
-            ? issues.map((issue, i) =>
-                h(
-                  'button',
-                  {
-                    key: i,
-                    type: 'button',
-                    title: dict.jumpHint,
-                    style: {
-                      ...styles.lintRow,
-                      color:
-                        issue.level === 'error'
-                          ? 'var(--dsw-alias-state-error-primary)'
-                          : issue.level === 'warn'
-                            ? 'var(--dsw-alias-state-warn-primary)'
-                            : 'var(--dsw-alias-label-tertiary)',
-                      cursor: issue.line ? 'pointer' : 'default',
-                    },
-                    onClick: () => jumpTo(issue.line),
-                  },
-                  issue.text,
-                ),
-              )
-            : h('span', { style: styles.lintOk }, dict.lintOk),
+          issues.map((issue, i) =>
+            h(
+              'button',
+              {
+                key: i,
+                type: 'button',
+                title: dict.jumpHint,
+                style: {
+                  ...styles.lintRow,
+                  color:
+                    issue.level === 'error'
+                      ? 'var(--dsw-alias-state-error-primary)'
+                      : issue.level === 'warn'
+                        ? 'var(--dsw-alias-state-warn-primary)'
+                        : 'var(--dsw-alias-label-tertiary)',
+                  cursor: issue.line ? 'pointer' : 'default',
+                },
+                onClick: () => jumpTo(issue.line),
+              },
+              issue.text,
+            ),
+          ),
+          issues.length === 0 ? h('span', { style: styles.lintOk }, dict.lintOk) : null,
           report.total > issues.length
             ? h('span', { style: styles.lintMore }, dict.lintMore(report.total - issues.length))
             : null,
         ),
-        h('p', { style: styles.hint }, dict.editorHelp),
       )
     }
 
@@ -1736,11 +1739,39 @@ window.__ModuleLoader__.load({
         whiteSpace: 'pre',
         overflow: 'auto',
       },
-      lintBox: { display: 'flex', flexDirection: 'column', gap: 2, minHeight: 18 },
-      lintRow: { border: 0, background: 'transparent', padding: 0, textAlign: 'left', fontSize: 12, lineHeight: '17px', font: 'inherit' },
-      lintOk: { fontSize: 12, color: 'var(--dsw-alias-state-success-primary)' },
-      lintCount: { fontSize: 12, color: 'var(--dsw-alias-state-warn-primary)', fontWeight: 600 },
-      lintMore: { fontSize: 12, color: 'var(--dsw-alias-label-tertiary)' },
+      lintHead: {
+        display: 'flex',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        gap: 8,
+        minHeight: 15,
+      },
+      lintBox: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        height: 46,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        paddingRight: 2,
+      },
+      lintRow: {
+        border: 0,
+        background: 'transparent',
+        padding: 0,
+        textAlign: 'left',
+        fontSize: 11,
+        lineHeight: '14px',
+        font: 'inherit',
+        display: 'block',
+        maxWidth: '100%',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      },
+      lintOk: { fontSize: 11, lineHeight: '14px', color: 'var(--dsw-alias-state-success-primary)' },
+      lintCount: { fontSize: 11, color: 'var(--dsw-alias-state-warn-primary)', fontWeight: 600 },
+      lintMore: { fontSize: 11, lineHeight: '14px', color: 'var(--dsw-alias-label-tertiary)' },
       gutterBad: { color: 'var(--dsw-alias-state-error-primary)', fontWeight: 600 },
       gutterWarn: { color: 'var(--dsw-alias-state-warn-primary)' },
       unsavedBadge: { color: 'var(--dsw-alias-state-warn-primary)' },
